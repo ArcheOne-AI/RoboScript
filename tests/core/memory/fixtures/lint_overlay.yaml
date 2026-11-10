@@ -1,0 +1,23 @@
+# An invented benchmark vocabulary over the generic Memory lint rules, for the linter's tests: the
+# words they name (`roboscript.memory.config.overlaid`).
+# Kinds of object (foreign_object: text naming one the demonstration's instruction does not,
+# not even inside a longer word: teapot holds pot). Words with other senses here (box: a
+# bounding box, camera, pad, mat, marker) are left out.
+object_words: [bottle, cup, mug, bowl, plate, pot, pan, kettle, jar, basket, bin, bag, block,
+               bell, phone, stapler, mouse, keyboard, laptop, book, card, car, shoe, hammer,
+               bread, apple, banana, sponge, brush, pen, pencil, scissors, knife, fork, spoon,
+               tray, clock, seal, fan, tea, ball, toy, screwdriver, wrench, tape, microwave,
+               cabinet, drawer]
+
+rules:
+  asset_annotation:
+    words: [anchor_point, anchor_points, marker_point, marker_points, anchor_frames]
+    patterns:
+      - '(?<![^\W_])(?:anchor|marker)[ _-]?points?[ _-]?(?:ids?|\d+)(?![^\W_])'
+      - '(?<![^\W_])ap_?\d+(?![^\W_])'
+  simulator_name:
+    words: [simx, physim]
+    patterns:
+      - '(?<![^\W_])id\d{3}(?![^\W_])'   # asset ids such as id020, also inside names
+  evaluator:
+    words: [success_probe, judge_score]

@@ -1,0 +1,25 @@
+# MockEnv as a server (roboscript.envs.mock.MockConfig), for tests of the layers above the env
+# contract. Copy to mock_env.yaml (git-ignored) and run it in the agent venv:
+#   python -m roboscript.envs.mock --config configs/mock_env.yaml
+# The control-plane token is RS_ENV_TOKEN from .env.
+
+# The one task this env process serves; `open` refuses any other.
+task: lift_red
+# Where camera frames (.npy) go; a run keeps them under its run directory.
+blob_dir: /path/to/blobs
+# Make every step take this long, to exercise concurrent calls; 0 runs at full speed.
+step_delay_s: 0.0
+# Seeds on which the (pretend) expert pre-run fails, so the episode is not solvable.
+unsolvable_seeds: []
+# The task definitions: built in are lift_red and stack_red_on_blue; replace them with your own:
+# tasks:
+#   lift_green:
+#     primary: lift the green box
+#     paraphrase: raise the green block
+#     step_limit: 40
+#     boxes: [red, green, blue]
+#     success: {kind: lifted, box: green, height: 0.05}
+server:
+  host: 127.0.0.1
+  control_port: 0
+  agent_port: 0

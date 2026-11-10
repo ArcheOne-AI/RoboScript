@@ -1,0 +1,137 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript"
+description = "Infrastructure for agentic robot manipulation: agents, tools, perception, motion, memory and learning methods"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+# Lower bounds must stay installable in simulator environments, which can pin Python 3.10.
+dependencies = [
+    "anyio>=4.11",
+    "httpx>=0.28",
+    "numpy>=1.26",
+    "openai>=2.6",
+    "pillow>=10.2",
+    "pydantic>=2.12",
+    "pydantic-settings>=2.10",
+    "pyjwt>=2.10",
+    "python-dotenv>=1.1",
+    "pyyaml>=6.0",
+    "scipy>=1.15",
+    "starlette>=1.0",
+    "typing-extensions>=4.15",
+    "uvicorn>=0.34",
+]
+
+[project.urls]
+Homepage = "https://github.com/ArcheOne-AI/RoboScript"
+Repository = "https://github.com/ArcheOne-AI/RoboScript"
+
+[project.optional-dependencies]
+testing = ["pytest>=8.4", "pytest-asyncio>=1.0"]
+# MCP hosting (roboscript.integrations.mcp, its only user): the official SDK, pinned exactly.
+mcp = ["mcp==2.2.0"]
+
+# Built-in implementations register like third-party ones.
+[project.entry-points."roboscript.benchmarks"]
+mock = "roboscript.envs.mock:MOCK"
+
+[project.entry-points."roboscript.brains"]
+replay = "roboscript.agent.replay:ReplayBrain"
+responses = "roboscript.agent.responses:ResponsesBrain"
+scripted = "roboscript.agent.scripted:ScriptedBrain"
+
+[project.entry-points."roboscript.dispatch_policies"]
+balanced = "roboscript.orchestrate.dispatch.assign:Balanced"
+
+[project.entry-points."roboscript.dispatch_transports"]
+local = "roboscript.orchestrate.dispatch.transport:LocalTransport"
+ssh = "roboscript.orchestrate.dispatch.transport:SshTransport"
+
+[project.entry-points."roboscript.embodiments"]
+mock_bimanual = "roboscript.embodiments:MOCK_BIMANUAL"
+
+[project.entry-points."roboscript.event_sinks"]
+console_summary = "roboscript.records.sinks:CONSOLE_SUMMARY"  # example, off by default
+jsonl = "roboscript.records.sinks:JSONL"
+
+[project.entry-points."roboscript.gateway_policies"]
+default = "roboscript.gateway.router:DefaultPolicy"
+
+[project.entry-points."roboscript.guards"]
+episode_open = "roboscript.hub.steps:GUARDS.episode_open"
+visibility = "roboscript.hub.steps:GUARDS.visibility"
+validate = "roboscript.hub.steps:GUARDS.validate"
+resolve_aliases = "roboscript.hub.steps:GUARDS.resolve_aliases"
+action_lock = "roboscript.hub.steps:GUARDS.action_lock"
+budget = "roboscript.hub.steps:GUARDS.budget"
+stage_rules = "roboscript.hub.steps:GUARDS.stage_rules"
+retry_guard = "roboscript.hub.steps:GUARDS.retry_guard"
+count_actions = "roboscript.hub.steps:GUARDS.count_actions"
+timeout = "roboscript.hub.steps:GUARDS.timeout"
+metering = "roboscript.hub.steps:GUARDS.metering"
+check_output = "roboscript.hub.steps:GUARDS.check_output"
+count_steps = "roboscript.hub.steps:GUARDS.count_steps"
+unmoved = "roboscript.hub.steps:GUARDS.unmoved"
+fail_fast = "roboscript.hub.steps:GUARDS.fail_fast"
+recovery = "roboscript.hub.steps:GUARDS.recovery"
+give_up = "roboscript.hub.steps:GUARDS.give_up"
+retry_record = "roboscript.hub.steps:GUARDS.retry_record"
+done_state = "roboscript.hub.steps:GUARDS.done_state"
+finish = "roboscript.hub.steps:GUARDS.finish"
+sanitize = "roboscript.hub.steps:GUARDS.sanitize"
+render = "roboscript.hub.steps:GUARDS.render"
+action_notes = "roboscript.hub.steps:GUARDS.action_notes"
+rate_limit = "roboscript.hub.ratelimit:RATE_LIMIT"  # example, off by default
+
+[project.entry-points."roboscript.memory_stores"]
+file = "roboscript.memory.store:FileMemoryStore"
+
+[project.entry-points."roboscript.artifact_stores"]
+skillset = "roboscript.skills.store:SkillSetStore"
+task_memory = "roboscript.memory.artifact:MemoryArtifacts"
+
+[project.entry-points."roboscript.perception"]
+geometric = "roboscript.perception.grounding:GeometricGrounder"
+grounding_dino = "roboscript.perception.vision:VisionDetector"
+sam3 = "roboscript.perception.vision:VisionSegmenter"
+som = "roboscript.perception.vlm:SomGrounder"
+vlm = "roboscript.perception.vlm:BoxGrounder"
+
+[project.entry-points."roboscript.planners"]
+curobo = "roboscript.motion.curobo:CuroboPlanner"
+mock = "roboscript.motion.mock:MockPlanner"
+
+[project.entry-points."roboscript.prechecks"]
+env_capabilities = "roboscript.learning.prechecks:ENV_CAPABILITIES"
+gpu_headroom = "roboscript.learning.prechecks:GPU_HEADROOM"  # example, off by default
+seed_split = "roboscript.learning.prechecks:SEED_SPLIT"
+skillsets = "roboscript.learning.prechecks:SKILLSETS"
+
+[project.entry-points."roboscript.protocols"]
+evaluate = "roboscript.learning.evaluate:Evaluate"
+
+[project.entry-points."roboscript.skillsets"]
+manipulation = "roboscript.toolsets.manipulation.skillset:MANIPULATION_SKILLS"
+mock = "roboscript.testing.skills:MOCK_SKILLS"
+
+[project.entry-points."roboscript.toolsets"]
+geometry = "roboscript.toolsets.geometry:Geometry"
+hold = "roboscript.testing.hold:Hold"
+manipulation = "roboscript.toolsets.manipulation:Manipulation"
+memory = "roboscript.toolsets.memory:MemoryTools"
+mock = "roboscript.testing.mock:Mock"
+perception = "roboscript.toolsets.perception:Perception"
+sensing = "roboscript.toolsets.sensing:Sensing"
+worldstate = "roboscript.toolsets.worldstate:WorldState"
+
+[tool.hatch.version]
+path = "src/roboscript/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript"]

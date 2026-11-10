@@ -1,0 +1,65 @@
+# One real robot's configuration (robot_template.deployment.MyRobotConfig: the robots package's
+# SingleArmConfig plus this robot's hardware settings). Copy to robot.yaml (git-ignored) and fill
+# in. `scripts/check_config.py configs/robot.yaml` checks it offline; the robot server reads it as
+# its `robot_file` (configs/server.example.yaml). Field by field: docs/how-to/add-a-real-robot.md
+# section 2, and packages/robots/src/roboscript_robots/single_arm/fake.yaml.
+
+name: my_robot                   # also the embodiment profile's name
+world_axes: x forward, y left, z up, from the robot's base
+
+# A generic six-joint arm with a parallel gripper, commanded by joint positions; replace every
+# value with your robot's, measured or from its datasheet.
+arms:
+  arm:
+    joints: [joint1, joint2, joint3, joint4, joint5, joint6]
+    ee_link: flange
+    ee_to_tcp: [0.0, 0.0, 0.12]   # from the flange to the fingertip midpoint, in the flange frame
+    gripper:
+      joint: finger
+      scale: [0.0, 0.08]          # the gripper's stroke in its own unit: closed, open
+      empty: 0.0                  # the opening once closed on nothing
+      holding_threshold: 0.1      # an opening above this means something is held
+    home: [0.0, -0.6, 1.2, 0.0, 1.0, 0.0]
+    stops:                        # the range each joint really turns through (rad)
+      - [-3.0, 3.0]
+      - [-2.0, 2.0]
+      - [-2.5, 2.5]
+      - [-3.0, 3.0]
+      - [-2.0, 2.0]
+      - [-3.0, 3.0]
+
+cameras:
+  head: {kind: head, type: rgbd, width: 640, height: 480}
+  wrist: {kind: wrist, arm: arm, type: rgbd, width: 640, height: 480}
+
+# Grasp and asset frames: fill in when a skill uses them (the core's manipulation entries need
+# arms named left and right, so none mounts on a robot with one arm called `arm`).
+poses:
+  contact_to_grasp: [[0.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 0.0, 1.0]
+  placement_rotation: [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 1
+
+# The tasks a person can set up at the robot. A real robot has no seeds: a person sets each scene
+# up (the manual reset's prompt is shown when an episode opens) and an outside judge says whether
+# it worked.
+tasks:
+  lift_red_block: {instruction: lift the red block, step_limit: 60}
+
+# The safety limits the server enforces before every action (roboscript.contracts.robot_server.
+# RobotLimits): the box the TCP may not leave (world frame, m), speed caps, the control rate, and
+# the silence after which the robot stops. Start low.
+limits:
+  control_hz: 50
+  workspace_min: [0.15, -0.35, 0.02]
+  workspace_max: [0.55, 0.35, 0.50]
+  max_tcp_speed_m_s: 0.10
+  max_joint_speed_rad_s: 0.50
+  heartbeat_timeout_s: 0.5
+
+# This robot's hardware settings, read by its backend (MyRobotBackend) only.
+address: 192.168.0.10
+camera_devices:
+  head: /dev/video0
+  wrist: /dev/video2

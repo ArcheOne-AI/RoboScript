@@ -1,0 +1,14 @@
+# RoboTwin's part of the wicl protocol parameters, layered over the generic recipe
+# (recipes/wicl/protocols.yaml; docs/concepts/operations.md): the seed blocks the protocols start
+# from (pipeline.yaml's `seeds` declares them all and the seed_split precheck keeps them apart),
+# and the expert pre-run's tries.
+
+protocols:
+  imitate:
+    prerun_attempts: 3      # the GPU planner makes the expert pre-run nondeterministic
+  practice:
+    first_seed: 10000       # the practice block
+    prerun_attempts: 3
+  evaluate:
+    first_seed: 20000       # the optional validation block, try 1 only
+    prerun_attempts: 3

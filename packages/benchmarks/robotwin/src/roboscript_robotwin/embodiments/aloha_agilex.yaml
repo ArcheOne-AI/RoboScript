@@ -1,0 +1,103 @@
+# aloha_agilex: RoboTwin 2.0's "aloha-agilex". Where each value comes from,
+# relative to ROBOTWIN_ROOT (config = assets/embodiments/aloha-agilex/config.yml, robot.py =
+# envs/robot/robot.py); tests/benchmarks/robotwin checks them against RoboTwin and the simulator.
+name: aloha_agilex
+description: a two-armed robot at a table
+# take_action(qpos): left joints, left gripper, right joints, right gripper (envs/_base_task.py
+# take_action; get_obs joint_action/vector is the same layout).
+action_dim: 14
+# The world frame in the prompts' words: the robot's root stands at y = -0.65 facing +y (config
+# robot_pose, the planners' base below), z up.
+world_axes: x to the robot's right, y forward (away from the robot), z up
+assets_root: ${ROBOTWIN_ROOT}/assets/embodiments/aloha-agilex
+arms:
+  left:
+    joints: [fl_joint1, fl_joint2, fl_joint3, fl_joint4, fl_joint5, fl_joint6]  # config arm_joints_name[0]
+    action: [0, 6]
+    gripper_index: 6
+    # config move_group[0] and curobo_left.yml ee_link; robot.get_left_ee_pose() (the endpose
+    # of get_obs) is this link's pose (robot.py _trans_endpose with gripper_bias 0.12).
+    ee_link: fl_link6
+    # robot.get_left_tcp_pose() = ee + R_ee [0.12, 0, 0]: the fingertip midpoint, 12 cm ahead
+    # of the ee along its x axis, the gripper's pointing direction (robot.py _trans_endpose).
+    ee_to_tcp: [0.12, 0.0, 0.0]
+    gripper:
+      joint: fl_joint7  # config gripper_name[0].base; fl_joint8 mimics it
+      # config gripper_scale: robot.set_gripper drives fl_joint7 to -0.01 + c * 0.055 for the
+      # normalized command c; 1 opens, 0 closes (below the joint's lower limit 0, to squeeze).
+      scale: [-0.01, 0.045]
+      open: 1.0
+      closed: 0.0
+      # Closed on nothing the finger stops at its URDF lower limit 0: (0 + 0.01) / 0.055.
+      empty: 0.1818
+      # A settled opening above this means the fingers stopped on an object: above `empty`, below
+      # the thinnest object held.
+      holding_threshold: 0.188
+      # Each finger (fl_joint7, fl_joint8: prismatic, URDF limits 0-0.04765) opens up to 4.5 cm
+      # (scale's top): about 9 cm between the open fingers.
+      span_m: 0.09
+    # RoboTwin's grasp chooser (envs/_base_task.py choose_grasp_pose): approach tilts from config
+    # rotate_lim [0, 1] rad; top_down = GRASP_DIRECTION_DIC top_down_little_right (the left arm's),
+    # side = config grasp_perfect_direction[0], front_right (envs/_GLOBAL_CONFIGS.py).
+    grasp:
+      tilt: [0, 1]
+      top_down: [-0.61239, 0.353523, -0.61239, -0.353524]
+      side: [-0.924, 0, 0, -0.383]
+    planner:
+      curobo: curobo_left.yml  # robot.py set_planner: curobo.yml -> curobo_left.yml when dual-arm
+      urdf: urdf/arx5_description_isaac.urdf  # config urdf_path
+      srdf: srdf/arx5_description_isaac.srdf  # config srdf_path
+      base: {p: [0.0, -0.65, 0.0], q: [0.707, 0.0, 0.0, 0.707]}  # config robot_pose (one root)
+    # config homestate[0]: the joints of every episode's start, where robot.py's
+    # set_origin_endpose takes the pose return_home returns to.
+    home: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    # The URDF gives every arm joint +-10 rad, but the wrist stops earlier in the simulator:
+    # joints 4 and 5 settle at these limits when driven towards +-3 rad from home. cuRobo plans
+    # within them and the executor refuses a path past them. Joints 2 and 3 meet the body or
+    # table first, which the planner models.
+    stops: [[-10, 10], [-10, 10], [-10, 10], [-1.85, 2.47], [-1.69, 1.76], [-10, 10]]
+  right:
+    joints: [fr_joint1, fr_joint2, fr_joint3, fr_joint4, fr_joint5, fr_joint6]  # arm_joints_name[1]
+    action: [7, 13]
+    gripper_index: 13
+    ee_link: fr_link6  # config move_group[1]
+    ee_to_tcp: [0.12, 0.0, 0.0]
+    gripper:
+      joint: fr_joint7  # config gripper_name[1].base
+      scale: [-0.01, 0.045]
+      open: 1.0
+      closed: 0.0
+      empty: 0.1818
+      holding_threshold: 0.188
+      span_m: 0.09
+    # top_down_little_left and front_left (grasp_perfect_direction[1]): the left arm's mirrored.
+    grasp:
+      tilt: [0, 1]
+      top_down: [-0.353523, 0.61239, -0.353524, -0.61239]
+      side: [-0.383, 0, 0, -0.924]
+    planner:
+      curobo: curobo_right.yml
+      urdf: urdf/arx5_description_isaac.urdf
+      srdf: srdf/arx5_description_isaac.srdf
+      base: {p: [0.0, -0.65, 0.0], q: [0.707, 0.0, 0.0, 0.707]}
+    home: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # config homestate[1]
+    stops: [[-10, 10], [-10, 10], [-10, 10], [-1.85, 2.47], [-1.69, 1.76], [-10, 10]]
+# The cameras RoboScript shows the agent (docs/architecture.md). The head
+# camera type comes from our task configs (RoboTwin's demo configs use D435, 320x240); the wrist
+# cameras ride on the left_camera and right_camera links. RoboTwin's front_camera (config
+# static_camera_list) is not shown.
+# How grasps and assets are framed (contracts.skills.PoseConventions), RoboTwin's:
+# the contact frame (y against the approach, z the closing axis) to the grasp frame (x the
+# approach); the fingers' closing axis in the ee and TCP frames; an asset's local up (+y); a
+# placement point's rotation on its face (create_box: x kept, y and z reversed); the approach
+# tilts a grasp is tried at (envs/_GLOBAL_CONFIGS.py ROTATE_NUM).
+poses:
+  contact_to_grasp: [[0.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 1.0, 0.0]
+  placement_rotation: [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 10
+cameras:
+  head_camera: {kind: head, type: Large_D435, width: 640, height: 480}
+  left_camera: {kind: wrist, arm: left, type: D435, width: 320, height: 240}
+  right_camera: {kind: wrist, arm: right, type: D435, width: 320, height: 240}

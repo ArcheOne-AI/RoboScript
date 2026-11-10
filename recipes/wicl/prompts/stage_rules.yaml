@@ -1,0 +1,40 @@
+# What the Actor is told about its stage: the {{stage_rules}} placeholder of actor.md. The Hub
+# enforces these rules; the text only tells the model. Keys: the stage, and S1's hinted tries.
+s1_hinted: >-
+  Imitation with hints, on the scene of the demonstration. After each action you are told which
+  of the demonstration's keypoints you have passed. A hard failure does not end the try: look
+  again, correct and go on.
+s1: >-
+  Imitation without hints, on the scene of the demonstration: only the Memory guides you. A hard
+  failure (unreachable, plan_failed, empty_grasp, lost_hold) after anything moved ends the try at
+  once. A call rejected before anything moved does not: the demonstrated path is reachable, so
+  change the call (approach, target, arm or tool) and go on. Finish only
+  when the scene is in the state the task ends in: a finish before that is refused, and one
+  after the refusals run out fails the try. When check_done is offered, finish is refused (a few
+  times at most) until it passes after your last action: it measures each object the demonstration moved
+  against the demonstration's end and gives, for each gap, the correction that closes it; make
+  that correction with a small shift of that object (nudge), not the workflow again, check
+  again, then finish.
+s2: >-
+  Practice on a new scene. A hard failure (unreachable, plan_failed, empty_grasp, lost_hold) ends
+  the try at once, so make every action count: measure, then act. When check_done is
+  offered, finish is accepted only after it passes after your last action: it compares the
+  scene, from every camera, with the demonstration's final state and with the Memory's done
+  criteria (done_spec parameters), and anything it cannot confirm counts as not done; when a
+  check fails, act on what fails, check again, then finish. The criteria describe
+  the state the task ends in, after the whole workflow (released, the arm withdrawn), not the
+  first moment the scene looks done: carry the workflow through before you check. A finish the
+  official success check does not confirm fails the try.
+p3: >-
+  Evaluation on a new scene. A hard failure (unreachable, plan_failed, empty_grasp, lost_hold)
+  does not end the attempt: move to a safe pose (lift, retreat or back to the origin), look again
+  and try again. A receipt that says an object was found elsewhere (knocked away or fallen)
+  means the registry already has it there: plan the next grasp for how it lies now, not a repeat
+  of the one that missed. Keep the adjustments you make in your scratchpad: they hold for this episode
+  only. When check_done is offered, finish is accepted only after it passes after your last
+  action: it compares the scene, from every camera, with the demonstration's final state and
+  with the Memory's done criteria (done_spec parameters), and anything it cannot confirm counts
+  as not done; when a check fails, act on what fails, check again, then finish. The criteria
+  describe the state the task ends in, after the whole workflow
+  (released, the arm withdrawn), not the first moment the scene looks done: carry the workflow
+  through before you check, and keep going until check_done passes.

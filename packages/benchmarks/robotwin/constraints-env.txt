@@ -1,0 +1,18 @@
+# Versions of the core dependencies in the simulator environment (roboscript-sim: a clone
+# of RoboTwin's environment plus examples/simBenchmarks/RoboTwin/requirements-sim.txt), read with PYTHONNOUSERSITE=1.
+# CI's Python 3.10 job installs them over uv.lock before it runs RoboTwin's tests, so they run
+# with what the simulator side imports. Update them when that environment changes.
+anyio==4.11.0
+httpx==0.28.1
+numpy==1.26.4
+openai==2.6.0
+pillow==10.2.0
+pydantic==2.12.3
+pydantic-settings==2.15.0
+pyjwt==2.10.1
+python-dotenv==1.1.1
+pyyaml==6.0.1
+scipy==1.15.3
+starlette==1.6.0
+typing-extensions==4.15.0
+uvicorn==0.53.0

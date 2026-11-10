@@ -1,0 +1,24 @@
+# A stack running only the vision service (roboscript.stack.StackConfig): copy to
+# configs/stacks/vision.yaml, then `async with roboscript.stack.up("configs/stacks/vision.yaml")`
+# from the repository root (relative paths are taken from the working directory). The service
+# itself reads configs/vision.yaml (from configs/vision.example.yaml).
+
+interpreters:
+  agent: .venv/bin/python
+  # sim: the simulator env, needed only by services with `interpreter: sim`
+  # The vision env: a venv made from packages/vision/requirements-gpu.txt (see its README).
+  vision: /path/to/roboscript-vision/bin/python
+# Our code is not installed in the vision env: its services get these on PYTHONPATH.
+vision_pythonpath: [packages/core/src, packages/vision/src]
+run_dir: runs/vision-stack
+# The blob store directory the services share, given to each as RS_BLOB_DIR (the vision service's
+# default); unset, it is <run_dir>/blobs.
+blob_dir: runs/blobs
+
+services:
+  - name: vision
+    module: roboscript_vision
+    interpreter: vision
+    args: [--config, vision]
+    gpu: 0                  # sets CUDA_VISIBLE_DEVICES
+    ready_timeout_s: 300    # imports, weights and warm-up, longer on a busy machine

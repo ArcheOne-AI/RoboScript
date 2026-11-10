@@ -1,0 +1,132 @@
+# The Agent host (roboscript.learning.agent_host.AgentHostConfig): the agent's side of P3's
+# official evaluation, behind the client-driven bridge. A benchmark's launcher, such as RoboTwin's
+# (roboscript_robotwin.eval.launch), writes one per run from its own config. Copy this to
+# configs/agent_host.yaml only to start a host by hand:
+#   python -m roboscript.learning.agent_host --config configs/agent_host.yaml
+# Its bearer token is --token-file (a file only its owner can read, as the launcher writes one per
+# run), else RS_HOST_TOKEN (the environment, then .env). Relative paths are relative to the
+# repository root.
+
+# The frozen Memory version of each task (roboscript.memory.build_manifest) and the store that
+# holds them (configs/memory.example.yaml).
+manifest: runs/p3/manifest.json
+memory:
+  name: file
+  options: {root: runs/memory}
+
+# How the Actor gets Task Memory (docs/concepts/learning.md): `library` (the default) gives it
+# no Memory of its task id but the library of every task's frozen Memory, through the `library`
+# toolset (index, search, read, use), and it chooses which to read and use; `bound` puts the
+# Memory of its task id in its prompt. memory_library: `index`, a
+# library.json (python -m roboscript.memory.library --unit-manifest <unit>/P3/manifest.json ...;
+# null: the manifest's tasks in the store above; give one across the benchmark's tasks, a library
+# of one is warned of); `exclude`, tasks left out; `exclude_own`, each episode's own task left out
+# (leave-one-out: its demonstration and an overlay's part for it are withheld too). Every library
+# episode records memory_access; a record without it was bound.
+memory_access: library
+memory_library: {index: null, exclude: [], exclude_own: false}
+
+# The blob store shared with the benchmark's policy module (same machine): observations arrive
+# there, by reference. null: RS_BLOB_DIR, which a stack sets for its services.
+blob_dir: null
+
+# The agent.host plane's port on 127.0.0.1; 0 picks a free one (the ready file names it). The
+# ready file is written once it listens; /readyz answers 200 once the frozen Memory of every task
+# in the manifest is loaded.
+port: 0
+
+# The method whose evaluation phase (p3) the episodes run: a roboscript.methods name.
+method: wicl
+# The recipe whose prompts the Actor reads (prompts/actor.md, stage_rules.yaml's p3; the guides
+# of the skillsets the toolsets mount fill its {{conventions}}), rendered as S1 and S2 render
+# theirs.
+recipe: recipes/wicl
+
+episodes:
+  # <records>/<slot>/ep<NNN>/: llm_calls.jsonl, turns.jsonl, events.jsonl, config.json,
+  # memory_before.md (bound) or library.json (library), summary.json; <records>/events.jsonl is
+  # the host's whole event log, <records>/library.json the library with its cards.
+  records: runs/p3/host
+  # The embodiment the toolsets see (a registered name or a profile's YAML).
+  embodiment: packages/benchmarks/robotwin/src/roboscript_robotwin/embodiments/aloha_agilex.yaml
+  # P3 has no turn budget: the benchmark's step limit is its only limit, and a hard failure does
+  # not end the episode (error recovery). The wall clock and the model calls are bounded only as
+  # runaway guards, per action of the task's step limit, so that they never bind before it.
+  guards: {wall_clock_s_per_step: 10.0, model_calls_per_step: 4.0}
+  max_format_errors: 3      # replies in a row without a valid tool call end the episode
+  # Changes to P3's stage rules (recover: a hard failure does not end the episode).
+  rules: null
+  # The episodes' toolset profile; null: every mounted toolset (the method's p3 phase decides
+  # visibility).
+  toolsets: null
+  bridge:
+    observe_timeout_s: 50   # the client's next observation; below the sensing tools' 60 s,
+                            #   above the policy relay's submit timeout
+    report_timeout_s: 300   # the report of an executed batch
+
+# The toolsets mounted (entry-point group roboscript.toolsets) with their configs. The scene
+# toolsets (perception, geometry, worldstate: configs/scene.example.yaml) identify the objects
+# once as each episode opens; on a robot the cameras see they need the motion service (the
+# self-filter), and the vision service for the cross-check (a benchmark's launcher may fill both
+# in).
+# The three share one config: the Hub refuses to mount them with different ones. After every
+# action of the manipulation toolset, the grasp relations update the objects they registered.
+# Each names the benchmark's skillsets (Benchmark.skillsets; roboscript.skillsets): their bindings
+# (the executor's tuning) and their tools. Without one, the manipulation toolset has no executor
+# binding and refuses to mount. A benchmark's P3 launcher may add them itself. A toolset already
+# served by its own server takes `url: <its MCP
+# endpoint>` and no config (docs/how-to/remote-toolsets.md); keep the ones that touch the env here.
+toolsets:
+  - name: sensing
+    config: {}
+  # configs/manipulation.example.yaml: here the motion service started by hand
+  # (python -m roboscript.motion --config motion --port 18300, in the simulator env); the P3
+  # launcher sets a run's own.
+  # RoboTwin's perception binding (roboscript_robotwin.config.with_perception_binding), which the
+  # P3 launcher fills in itself: the anchor camera, the table area and the prompts' words.
+  - name: manipulation
+    config:
+      planner: {url: "http://127.0.0.1:18300"}
+      table_top_z: 0.74       # until perception estimates the table (its TABLE fact)
+      table_perception:       # where the demonstration's table is found
+        anchor: head_camera
+        table: &table {xy_box: [-0.62, 0.62, -0.37, 0.37], z_range: [0.60, 0.80]}
+    skillsets: [robotwin]
+  - name: perception
+    config:
+      planner: "http://127.0.0.1:18300"
+      pipeline: &pipeline
+        anchor: head_camera
+        scene_words: tabletop
+        anchor_words: a robot's head camera
+        camera_words:
+          left_camera: a camera on the robot's left wrist
+          right_camera: a camera on the robot's right wrist
+        table: *table
+    skillsets: [robotwin]
+  - name: geometry
+    config: {planner: "http://127.0.0.1:18300", pipeline: *pipeline}
+  - name: worldstate
+    config: {planner: "http://127.0.0.1:18300", pipeline: *pipeline}
+  - name: done   # wicl's done tools (check_done), on the same scene config as worldstate
+    config: {planner: "http://127.0.0.1:18300", pipeline: *pipeline}
+
+# The Hub (configs/hub.example.yaml); the defaults when empty.
+hub: {}
+
+# The Actor's brain (entry-point group roboscript.brains) and its config, as in
+# configs/learning.example.yaml: `responses`, the own loop on the gateway
+# (configs/agent.example.yaml), or `scripted` for tests.
+brain:
+  name: responses
+  config:
+    model: brain-default
+    reasoning_effort: low
+    # the models' context windows
+    context:
+      windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}
+
+# The one-time identification, tried again in place when the infrastructure fails it (the model
+# or the vision service did not answer; nothing re-runs a P3 episode): the tries, and the wait
+# before the second, doubling after it. Out of tries, the episode ends as infra_error.
+identify: {attempts: 3, backoff_s: 2.0}

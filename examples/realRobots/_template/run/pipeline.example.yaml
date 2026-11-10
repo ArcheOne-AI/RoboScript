@@ -1,0 +1,25 @@
+# A SKELETON of how a learning method is bound to this robot; nothing reads it yet. Copy to
+# run/<method>/pipeline.yaml next to a method's generic recipe (recipes/<method>/) and fill it in
+# once a method runs on real robots. The generic recipe holds the method's content; this file
+# holds what is particular to the robot.
+
+robot:
+  deployment: examples/realRobots/<model>/configs/robot.yaml
+  # The robot server runs as its own process, started by the operator with the safety rules in
+  # packages/robots; the run connects to its control port.
+  url: http://127.0.0.1:8100
+
+tasks:
+  - lift_red_block
+
+# The embodiment and the skillset are the robot's, not a benchmark's.
+embodiment: my_robot
+skillsets:
+  - name: my_robot
+
+# Real robots have no seeds and no ground truth. A method that needs them (wicl needs seeds, a
+# success latch, an expert and ground truth) is refused by the env_capabilities precheck before the
+# run starts, with a line for each. A method for real robots declares the capabilities it needs in
+# its `requires`: external success, manual reset, and `reruns` as the operator is willing to reset
+# a scene again.
+seeds: {blocks: {}}

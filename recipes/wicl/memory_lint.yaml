@@ -1,0 +1,110 @@
+# The Memory linter's vocabulary for the wicl recipe (roboscript.memory.LintConfig). It is
+# a vocabulary that keeps simulator internals and scene-specific words out of Memory. A rule
+# names what must not appear in Memory text, parameter names or labels: words and phrases and
+# regular expressions, any case. Words match between alphanumeric boundaries, so `_` separates
+# them (`seed_10003_yaw` holds `seed`); the patterns use the same boundaries, written
+# (?<![^\W_]) and (?![^\W_]). SCRATCH is never linted. Built in besides: the limits below,
+# `{name}` / `{name.field}` naming nothing, robot-frame constants under `landmark`, and a warning
+# for parameters no text names. Warnings (advice an edit's result carries, never blocking a write):
+# a rule with `level: warning`, roles or queries named by how an object looks (`appearance_words`,
+# only those the demonstration's instruction also holds), PlaceSpec targets naming no role, specs
+# with no fit or moved from it past the `spec_drift_*` bounds, and done lines that are no
+# testable predicates. `executable_level` (error or warning) ranks the checks that a Memory can
+# be carried out as written (calls to tools the Actor lacks, quantities as prose or literals,
+# placements in a frame whose x is open).
+
+max_words: 1200           # Memory text without SCRATCH: merge or shorten rather than append
+max_lessons: 12
+# How fixed target regions are written besides a PlaceSpec's robot_frame target, which is always
+# allowed (a hand-over point, the first block of a stack; never a grasp): `landmark` (default),
+# an offset from table_center, front_edge_mid or robot_midline, or `robot_frame`, number
+# parameters in the robot base frame.
+fixed_targets: landmark
+spec_drift_m: 0.05        # a fitted spec's offset may move this far (m) from its fit ...
+spec_drift_frac: 0.5      # ... a grasp's fractional offset this much, an angle this many degrees
+spec_drift_deg: 30.0
+executable_level: error   # error | warning (an editor refuses a Memory with an error)
+# A length parameter with no frame this long or longer reads as a world height (a warning): the
+# table stands lower in other scenes, so a Memory binds heights relative to the table, an object
+# or the robot base.
+absolute_height_m: 0.6
+# Words for how an object looks (colour, material, texture, pattern), not what it is for. A role
+# name or a locate query that holds one the demonstration's instruction also holds is named by
+# the demonstration's instance. Sizes are left out: they can be the task.
+# Kinds of object (foreign_object: text naming one the demonstration's instruction does not), a
+# benchmark's overlay lists them.
+object_words: []
+appearance_words: [red, green, blue, yellow, black, white, purple, orange, pink, brown, gray, grey,
+                   beige, silver, golden, gold, cyan, magenta, teal, coral, violet, navy, maroon,
+                   turquoise, dark, light, bright, plastic, wooden, wood, metal, metallic, rubber,
+                   ceramic, glass, paper, cardboard, fabric, leather, smooth, rough, shiny,
+                   glossy, matte, transparent, striped, patterned, spotted, checkered]
+
+rules:
+  asset_annotation:
+    message: >-
+      asset annotations do not exist on a real robot; name the part and describe the grasp or
+      placement as a GraspSpec or PlaceSpec
+    words: [point id, point ids]
+  simulator_name:
+    message: simulator names differ from what a robot sees; refer to objects by their role
+    patterns:
+      - '(?<![^\W_])self\.[a-z_]+'           # task-code attributes
+  seed:
+    message: seeds are episode-specific; write what holds on every seed
+    patterns:
+      - '(?<![^\W_])seeds?[\s_#:=-]*\d+'
+      - '(?<![^\W_])\d{5,}(?![^\W_])'          # seed blocks and episode keys
+  evaluator:
+    message: >-
+      ground truth, success checks, referees and keypoints exist only in simulation; state
+      completion as predicates over perception and proprioception
+    words: [success latch, referee, q-score, reward, keypoint,
+            keypoints, gt, diagnosis, diagnostics]
+    patterns:
+      - '(?<![^\W_])ground[\s_-]?truth'
+      - '(?<![^\W_])true[\s_-](?:pose|position|yaw)s?(?![^\W_])'
+      - '(?<![^\W_])[LR]-?K\d+(?![^\W_])'    # keypoint ids such as L-K2
+  episode_fact:
+    message: >-
+      a fact of one episode (a perception alias, a colour bound to a role, which one of several,
+      one try); roles in OBJECTS are abstract: read colours, sizes and which one from the live
+      instruction instead
+    words: [this episode, this seed, this try, last try, previous try]
+    # OBJECTS role descriptions name no instance: no colour, no "which one", no letter label
+    role_words: [red, green, blue, yellow, black, white, purple, orange, pink, brown, gray, grey,
+                 beige, silver, golden, cyan, magenta, teal, leftmost, rightmost, nearest,
+                 farthest, closest, largest, smallest, biggest]
+    role_patterns:
+      - '(?<=[a-z] )(?-i:[A-D])(?![^\W_])'   # a letter label: block A, the B one
+      - '(?<![^\W_])(?:left|right|front|back|near|far|first|second|third)\s+one(?![^\W_])'
+    patterns:
+      - '(?<![^\W_])(?:obj|frame|region|cloud|part)_\d+(?![^\W_])'
+      - '(?<![^\W_])(?:in|on|during)\s+(?:try|attempt)\s*#?\s*\d'   # "try 2 cm lower" is advice
+      # "the red block is A" and "A is the red block"; "the pad is B" names no colour
+      - '(?<![^\W_])(?:red|green|blue|yellow|black|white|purple|orange|pink|brown|gr[ae]y)\s+(?:[a-z]+\s+)?(?:is|=)\s+(?:object\s+)?(?-i:[A-Z])(?![^\W_])'
+      - '(?<![^\W_])(?-i:[A-Z])\s+(?:is|=)\s+(?:the\s+)?(?:red|green|blue|yellow|black|white|purple|orange|pink|brown|gr[ae]y)(?![^\W_])'
+  absolute_position:
+    message: coordinates belong in a parameter, relative to an object, a part, a landmark or the TCP
+    patterns:
+      - '-?\d*\.\d+\s*,\s*-?\d*\.\d+'        # a coordinate pair: 0.12, -0.05
+      - '(?<![^\W_])[xyz]\s*[=:]?\s*-?\d'     # x 0.31, y=-0.12, z: 0.8
+  robot_distance:
+    fixed_targets: landmark
+    message: >-
+      a distance from the robot, the world or the origin is a robot-frame constant; write fixed
+      targets as a parameter relative to a landmark (table_center, front_edge_mid, robot_midline)
+    patterns:
+      # the landmark robot_midline is not the robot; "base" alone is often an object's base
+      - '\d\s*(?:m|cm|mm)(?![^\W_])[^.;\n]{0,30}(?<![^\W_])(?:robot|world|origin|base frame)(?!\w)'
+  privileged_ref:
+    level: warning
+    message: >-
+      keypoints, success checks and latches exist only in simulation, and an Actor never sees
+      them; write the stage in terms of the scene and the robot
+    patterns:
+      - '(?<![^\W_])(?<!-)K\d+(?![^\W_])'      # a keypoint id without an arm: K3
+      - '(?<![^\W_])official[\s_-](?:success|check)'
+      - '(?<![^\W_])(?:success|scene-level)[\s_-]+(?:check|latch)'
+      - '(?<![^\W_])latch(?:ed|es|ing)?(?![^\W_])'
+      - '(?<![^\W_])finish(?:[^.;]{0,25})(?:refused|rejected|gate)'

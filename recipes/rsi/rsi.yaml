@@ -1,0 +1,29 @@
+# P4's RSI document rules (roboscript_methods.rsi.recipe.RsiRules; docs/concepts/learning.md).
+# Typed edits a round accepts, by round (round 1, 2, 3; later rounds keep the last value):
+# GLOBAL as a whole, and each task's part on its own.
+global_edits: [8, 5, 3]
+task_edits: [4, 3, 2]
+# Longest field of an entry, in characters (what an Actor reads: when, do, check), and the most
+# evidence references one entry keeps. `do` is one behavior, about 35 words at most;
+# `when` and `check` about 25 each.
+caps:
+  when: 160
+  do: 220
+  check: 160
+  evidence: 20
+# What an evaluated Actor reads of the document, in estimated tokens: GLOBAL with the two fixed
+# notes, and one task's part. Tokens are estimated as the agent loop estimates prompt text
+# (characters / ContextBudget.chars_per_token). An edit may not grow a part past its budget.
+global_tokens: 1200
+task_tokens: 600
+# An entry (added, modified or merged) whose `when` and whose `do` are each this similar (word-level
+# difflib ratio) to those of another readable entry of its part, or of GLOBAL for a task's entry,
+# is refused: modify or merge that entry instead.
+dedup_threshold: 0.8
+# An add to GLOBAL, or a merge into it, needs evidence from this many distinct tasks, counting only
+# episodes the round's reflection read.
+global_min_tasks: 3
+# Retire an entry when its paired counts have harmful > helpful with at least this many in all, or
+# when no Actor that was shown it cited it for this many consecutive rounds (votes never count).
+retire_min_counts: 3
+retire_idle_rounds: 2

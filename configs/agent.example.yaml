@@ -1,0 +1,79 @@
+# The own agent loop's reference brain (roboscript.agent.ResponsesConfig): the OpenAI Responses
+# API through the model gateway. Copy to configs/agent.yaml to change it; the values shown are
+# the defaults but the context windows (`context.windows`: none by default). Limits per episode
+# (model calls, wall clock, format errors) come from the runner (roboscript.agent.Limits),
+# budgets, stage rules and render limits from the Hub.
+
+# A model or alias from your gateway config (configs/gateway.yaml).
+model: brain-default
+# none, minimal, low, medium, high or xhigh.
+reasoning_effort: low
+# Readable summaries of the reasoning in the responses (auto, concise, detailed, or null).
+reasoning_summary: auto
+# required: every reply is a tool call; auto: a text reply is answered with the nudge below and
+# counts as a format error.
+tool_choice: required
+# Send the episode id as prompt_cache_key, so that the episode's calls share the prompt cache.
+prompt_cache: true
+# null leaves the output limit to the API.
+max_output_tokens: null
+
+# What a request shows of the episode: the current turn in full (its encrypted reasoning
+# included; tool images only for its last `image_exchanges` exchanges), the previous turns as
+# text (at least `text_turns` of them, older ones summarized `text_turns` at a time, so the
+# start of the input stays the same for that many turns), images of the previous
+# `image_turns` turns (0: images are not sent again), and the brief's images (a hinted S1
+# attempt's demonstration keyframes) in the first `brief_image_turns` turns only (null: always).
+# Of the tool images these allow, at most `tool_images` are shown, the newest first (a call's
+# images all or none; the others as a stub naming the call that shows them again). A role that
+# reads many images in one long turn (the Demo Reader) sets more.
+history:
+  text_turns: 6
+  image_turns: 0
+  image_exchanges: 2
+  brief_image_turns: 3
+  tool_images: 8
+
+# Where images returned by tools go: `output` (the default) inside the function_call_output;
+# `message` into one user message right after the reply's outputs, numbered, each output naming
+# its own. A user message ends the reasoning chain, because the API drops earlier reasoning items
+# after one.
+image_delivery: output
+# The detail images are sent at: low, high or auto.
+image_detail: auto
+
+# Each turn opens with `observe` on the Hub's system channel (when the episode has it), with
+# these arguments, e.g. {views: [<a camera of the embodiment>]}; arguments the Hub refuses stop
+# the run.
+observe: true
+observe_arguments: {}
+
+# The answer to a reply without a tool call.
+nudge: "Answer with a tool call: information calls as needed, then one physical action or finish."
+
+# A model call infrastructure failed (a gateway 502/503/504 of the upstream's making, a broken
+# connection, a timeout) is sent again after each of these waits; a request's own failure never is.
+# The waits (and time queued at the gateway) do not count against the wall clock.
+retry_waits_s: [5, 20, 60, 120]
+
+# The context budget every request is held to: `fraction` of the model's context window
+# (`windows`, else `default_window`). Over it, the input shrinks down to `shrink_to` of the
+# budget: fewer tool images (halving, down to the newest exchange's), then more previous turns
+# summarized, then the current turn's oldest exchanges folded into one summary message; the
+# brief and the newest exchange always stay. Each shrink is a model.context event. The estimate
+# counts text at `chars_per_token`, the encrypted reasoning at `encrypted_chars_per_token` and
+# images at `images` (32 px patches, at most 1536; `low` for low detail). These defaults estimate
+# more than upstreams bill. When the upstream still refuses a prompt as too long, the rest of the
+# episode runs at `overflow_fraction` of the budget with tool images delivered as
+# `overflow_delivery` (some upstreams bill images inside a function_call_output as text), and the
+# call is sent again once. A second refusal ends it as context_overflow.
+context:
+  windows: {brain-default: 272000}  # by model or alias; others get default_window
+  default_window: 128000
+  fraction: 0.6
+  shrink_to: 0.75
+  overflow_fraction: 0.5
+  overflow_delivery: message
+  chars_per_token: 4.0
+  encrypted_chars_per_token: 20.0
+  images: {patch_px: 32, tokens_per_patch: 1.0, max_patches: 1536, base: 0, low: 85}

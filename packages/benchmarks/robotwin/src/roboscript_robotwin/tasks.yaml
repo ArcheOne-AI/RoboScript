@@ -1,0 +1,61 @@
+# The 50 RoboTwin 2.0 tasks with their official step limits, in take_action calls, from
+# task_config/_eval_step_limit.yml. Categories (what a task needs besides the object it moves, read
+# from each task's expert script and success check) serve reporting and the choice of
+# demonstrations. The Agent never reads them:
+#   C1 articulated: joint state or link poses (4)
+#   C2 oriented part: orientation, or a part of the grasped object, decides success (11)
+#   C3 receiver point: the target is an annotated point of a receiving object (10)
+#   C4 relative placement: the target is another object's pose plus an offset (10)
+#   C5 single object: the target is a constant, a displacement or free (15)
+# What a task's success check reads (which arm, ...) is referee knowledge: sim/referee.yaml.
+tasks:
+  adjust_bottle: {step_limit: 400, category: C2}
+  beat_block_hammer: {step_limit: 400, category: C2}
+  blocks_ranking_rgb: {step_limit: 1200, category: C5}
+  blocks_ranking_size: {step_limit: 1200, category: C5}
+  click_alarmclock: {step_limit: 400, category: C5}
+  click_bell: {step_limit: 400, category: C5}
+  dump_bin_bigbin: {step_limit: 600, category: C5}
+  grab_roller: {step_limit: 400, category: C5}
+  handover_block: {step_limit: 800, category: C4}
+  handover_mic: {step_limit: 600, category: C5}
+  hanging_mug: {step_limit: 900, category: C2}
+  lift_pot: {step_limit: 400, category: C5}
+  move_can_pot: {step_limit: 400, category: C4}
+  move_pillbottle_pad: {step_limit: 400, category: C4}
+  move_playingcard_away: {step_limit: 400, category: C5}
+  move_stapler_pad: {step_limit: 400, category: C2}
+  open_laptop: {step_limit: 700, category: C1}
+  open_microwave: {step_limit: 1500, category: C1}
+  pick_diverse_bottles: {step_limit: 400, category: C5}
+  pick_dual_bottles: {step_limit: 400, category: C5}
+  place_a2b_left: {step_limit: 400, category: C4}
+  place_a2b_right: {step_limit: 400, category: C4}
+  place_bread_basket: {step_limit: 700, category: C3}
+  place_bread_skillet: {step_limit: 500, category: C3}
+  place_burger_fries: {step_limit: 500, category: C3}
+  place_can_basket: {step_limit: 700, category: C3}
+  place_cans_plasticbox: {step_limit: 800, category: C3}
+  place_container_plate: {step_limit: 400, category: C3}
+  place_dual_shoes: {step_limit: 600, category: C2}
+  place_empty_cup: {step_limit: 500, category: C3}
+  place_fan: {step_limit: 400, category: C2}
+  place_mouse_pad: {step_limit: 400, category: C2}
+  place_object_basket: {step_limit: 700, category: C3}
+  place_object_scale: {step_limit: 400, category: C3}
+  place_object_stand: {step_limit: 400, category: C3}
+  place_phone_stand: {step_limit: 400, category: C2}
+  place_shoe: {step_limit: 500, category: C2}
+  press_stapler: {step_limit: 400, category: C5}
+  put_bottles_dustbin: {step_limit: 1700, category: C5}
+  put_object_cabinet: {step_limit: 700, category: C1}
+  rotate_qrcode: {step_limit: 400, category: C2}
+  scan_object: {step_limit: 500, category: C2}
+  shake_bottle: {step_limit: 700, category: C5}
+  shake_bottle_horizontally: {step_limit: 700, category: C5}
+  stack_blocks_three: {step_limit: 1200, category: C4}
+  stack_blocks_two: {step_limit: 800, category: C4}
+  stack_bowls_three: {step_limit: 1200, category: C4}
+  stack_bowls_two: {step_limit: 900, category: C4}
+  stamp_seal: {step_limit: 400, category: C4}
+  turn_switch: {step_limit: 400, category: C1}

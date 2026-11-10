@@ -1,0 +1,23 @@
+# A SKELETON of how a method is bound to BEHAVIOR; nothing reads it yet (see README.md). Copy to
+# run/<method>/pipeline.yaml next to the method's generic recipe (recipes/<method>/) and fill it
+# in once a method runs on BEHAVIOR.
+
+benchmark: behavior
+embodiment: r1_pro_behavior
+
+tasks:
+  - turning_on_radio
+  - picking_up_trash
+
+# The env server's config (roboscript_behavior.config.BehaviorConfig) but task and blob_dir. The
+# challenge opens each instance once, which the server enforces by default (`once_per_reset:
+# false` only in a local copy).
+env: {}
+
+# Resets are instance indexes carried in the seed field; each is run once, so a method that
+# learns first and is evaluated after needs instances for each. The seed_split precheck keeps
+# the blocks apart.
+seeds:
+  blocks:
+    train: {start: 0, count: 8}
+    evaluate: {start: 8, count: 2}

@@ -1,0 +1,3 @@
+- World frame: {{world_axes}}. Lengths are in meters.
+- `pick_up` takes the TCP target in world coordinates. The TCP is the fingertip midpoint, {{tcp_offset_m}} m ahead of the wrist, so aim it at the middle of the object, not at its top.
+- It is one counted action: open, close on the target, then lift. If the object is not within 3 cm of the TCP when the fingers close, nothing is lifted.

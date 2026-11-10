@@ -1,0 +1,8 @@
+# The robot server's config (roboscript_robots.base.RobotServerConfig). Copy to server.yaml
+# (git-ignored); `python scripts/serve_robot.py configs/server.yaml` serves the robot with it.
+
+robot: my_robot             # robot_template.MY_ROBOT's name
+backend: hardware           # or fake, to rehearse without the arm
+robot_file: configs/robot.yaml   # this machine's configuration (relative to where the server runs)
+operator: console           # the person at the robot resets and judges on this terminal
+blob_dir: /path/to/blobs

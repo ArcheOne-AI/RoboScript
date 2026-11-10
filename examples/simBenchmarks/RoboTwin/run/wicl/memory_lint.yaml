@@ -1,0 +1,29 @@
+# RoboTwin's vocabulary over the generic Memory lint rules (recipes/wicl/memory_lint.yaml;
+# `LearningConfig.lint_overlay`, `roboscript.memory.config.overlaid`): the names of its assets,
+# simulator stack and official checks. A list here goes before the recipe's.
+# Kinds of object (foreign_object: text naming one the demonstration's instruction does not,
+# not even inside a longer word: kitchenpot holds pot). Words with other senses here (box: a
+# bounding box, camera, pad, mat, marker) are left out.
+object_words: [bottle, cup, mug, bowl, plate, pot, pan, skillet, kettle, jar, basket, bin, bag,
+               block, bell, phone, stapler, mouse, mousepad, keyboard, laptop, book, card,
+               playingcard, toycar, car, shoe, hammer, roller, microphone, mic, bread, burger,
+               fries, apple, banana, fruit, sponge, soap, toothbrush, toothpaste, brush, pen,
+               pencil, scissors, knife, fork, spoon, spatula, ladle, tray, coaster, alarmclock,
+               clock, calculator, seal, fan, shaker, rubikscube, tea, teabox, drink, sauce, milk,
+               kiwi, battery, charger, headphone, glasses, wallet, toy, doll, ball, puck,
+               dumbbell, screwdriver, wrench, plier, pliers, tape, scanner, qrcode, microwave,
+               cabinet, drawer, dustbin, trashbin]
+
+rules:
+  asset_annotation:
+    words: [contact_point, contact_points, functional_point, functional_points, target_point,
+            target_points, contact_points_pose, functional_matrix]
+    patterns:
+      - '(?<![^\W_])(?:contact|functional|target)[ _-]?points?[ _-]?(?:ids?|\d+)(?![^\W_])'
+      - '(?<![^\W_])(?:cp|fp)_?\d+(?![^\W_])'
+  simulator_name:
+    words: [sapien, robotwin, mplib]
+    patterns:
+      - '(?<![^\W_])\d{3}_[a-z][a-z0-9_]*'   # asset ids such as 020_hammer, also inside names
+  evaluator:
+    words: [check_success, eval_success]

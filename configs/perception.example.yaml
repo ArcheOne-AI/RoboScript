@@ -1,0 +1,92 @@
+# Perception (roboscript.perception.config.PerceptionConfig): the default pipeline's knobs.
+# Library functions take them as a `PerceptionConfig` argument, and the values shown here are its
+# defaults (a test keeps them equal); `load_config("perception", PerceptionConfig)` reads a copy
+# at configs/perception.yaml. They assume a tabletop scene with noiseless metric depth, so
+# override them per benchmark. Where the table is and which camera anchors a frame have no
+# defaults: a benchmark's perception binding sets them (a scene toolset without them refuses to
+# analyze a frame). Lengths are meters.
+
+anchor: null          # the camera the table and object proposals come from (set it)
+scene_words: scene    # what the images show, in the VLM prompts' words
+anchor_words: a robot's camera   # the anchor camera in those words
+camera_words: {}      # other cameras in those words, by name (unlisted: the camera's name)
+cell: 0.0025          # height-map cell (2.5 mm)
+close_cells: 2        # closing window of (2 * 2 + 1) cells: bridges gaps up to ~1 cm
+merge_gap: 0.03       # fragments this close join when the camera cannot see table between them
+occluded_gap: 0.08    # ...and fragments this close in 3D when the robot hides the gap (fingers)
+
+table:
+  xy_box: null                         # x0, x1, y0, y1: the nominal table area that votes (set it)
+  z_range: null                        # z0, z1: the heights searched (set it)
+  band: 0.003                          # half width of the band around the histogram peak
+  inlier: 0.001                        # plane distance of the points defining the extent
+  max_tilt_deg: 2.0                    # a steeper band fit falls back to RANSAC...
+  min_points: 500                      # ...and so does a band with fewer points
+  ransac_threshold: 0.002
+  drop: 0.01                           # a table pixel next to one this far below the plane is on an edge
+  edge_points: 30                      # an edge needs this many edge pixels (all views together)
+
+lift:
+  support_height: 0.0005   # points this close to the table plane are the table (more on noisy depth)
+  flat_band: 0.01          # a mask with nothing above min_height keeps its points within this band
+  floor_z: 0.005           # points below this height are the floor
+  wall_margin: 0.03        # points this far beyond the table's far edge are the wall; null keeps them
+  min_points: 10
+  view_gap: 0.02           # another view's points join the anchor view's...
+  view_share: 0.2          # ...when this share of them comes within view_gap
+  voxel: 0.002             # merged views are averaged per cube of this edge (a wrist view is denser)
+
+proposals:
+  min_height: 0.004        # height-map cells need points 4 mm above the table
+  min_cells: 12            # smaller components are specks (0.75 cm^2)
+  beyond_table: true       # also what stands off the table within table.xy_box (a bin beside it)
+  color: true              # add flat patches (1-2 mm mats) on the table plane:
+  color_distance: 30.0     # ...saturated ones, and ones this far from the table's color (null: off)
+  rise: 0.0005             # ...that stand this far above the table (smoothed); also raised ones of any color
+  min_fill: 0.85           # ...that fill this share of their rectangle (mats do, shadows rarely)
+  color_plane: 0.004       # ...pixels within this of the table plane (below the solid threshold)
+  min_saturation: 90       # 8-bit HSV saturation and value thresholds
+  min_value: 40
+  min_color_pixels: 400
+  exclusion_px: 7          # color pixels this close to a height proposal belong to it
+  view_margin: 0.01        # a proposal's mask in another view grows within its box widened by this
+  cut_grow_m: 0.05         # a solid one the head's border cut: its box widened by this, topless
+
+self_filter:
+  margin: 0.015            # points this close to the robot's surface or spheres are the robot's...
+  per_meter: 0.04          # ...nearer ones this much per meter of camera depth (null: margin everywhere)
+  min_margin: 0.004        # ...but at least this (wrist cameras see the fingers from a few cm)
+  finger_samples: 5        # finger positions over their travel when the opening is not measured
+
+identify:                  # the one-time identification's optional steps:
+  split: true              # split proposals holding several objects (GroundingDINO + SAM 3)
+  words: true              # a text-only call for each role's words; geometry orders same-noun roles
+  compare: true            # roles of one kind of object: their marks cut out side by side, one call
+
+# Measuring a registered object again (perception.measure: remeasure, refine, look_pose): its
+# expected box grown by margin_m and its bottom raised by lift_m; fewer than min_points points is
+# not seen; a result below trust is not stored; a part moves at most part_m; a wrist view's distance (m) and elevation (deg).
+measure:
+  margin_m: 0.03
+  cut_margin_m: 0.2        # across, for an object the image border cut
+  lift_m: 0.003
+  min_points: 40
+  trust: 0.5
+  inlier_m: 0.005          # an aligned point this near a new one counts as seen
+  part_m: 0.03
+  distance: 0.3
+  elevation: 55.0
+  hinge_frame: 0.3           # a moving part's x points away from its hinge from this confidence
+
+# Which way frames point (perception.direction): the shape cue (height and width profile leans,
+# in half-lengths) that decides x, else the anchor (away from the robot base, then +y) where a
+# candidate lies at least `ambiguous` (cosine) along it.
+frames:
+  strength: 0.05             # a weaker shape cue does not decide x
+  ambiguous: 0.2
+  square: 1.3                # footprints this close to square also try the short side as x
+
+# A close centers what it holds on the TCP along the fingers' closing axis where the camera saw
+# only its near face (perception.registry: SceneRegistry.center_on_close); off keeps the pose
+# from before the close. The episode's registry keeps it, so replays of the demonstration agree.
+center_on_close: false

@@ -1,0 +1,84 @@
+# The wicl recipe's protocol parameters (roboscript.learning.ProtocolRecipe): what bounds each
+# role's episodes, and the stage parameters of S1 (imitate), S2 (practice) and evaluate. Each
+# protocol section is validated against the protocol's Config; a caller's values replace these.
+# This is the generic part: an env binding layers its own values over it (seed blocks, tries of
+# the env's setup check), and the run directory keeps the composed result (docs/concepts/operations.md).
+# The values are the method's defaults.
+
+roles:
+  # budgets are the Hub's: turns (physical actions and finish) and a wall clock that ends the
+  # episode. limits are the own loop's: model calls, wall clock and consecutive format errors.
+  # per_step grows a role's bounds with its task's step limit in the benchmark, per step of it,
+  # with the budgets and limits as the floor, so a longer task gets a longer episode.
+  # Turns are round(0.09 x steps), at least 45 and at most max_turns.
+  # Model calls grow at 0.4 a step (4.4 a turn, the rate of 200 calls for 45 turns), so they do
+  # not bind first on a long task. The wall clock is a runaway guard only: 12 s a step, about
+  # 107 s a turn, with a 60-minute floor, so that a slow endpoint does not end an episode before
+  # its turns run out.
+  # The Demo Reader writes a spec per keypoint of the demonstration and the Reviser reads the
+  # tries' logs. Both grow with the task, so their floors cover a short task and per_step grows
+  # them in proportion beyond it.
+  actor:
+    budgets: {max_turns: 45, wall_clock_s: 3600}
+    limits: {max_model_calls: 200, wall_clock_s: 3600, max_format_errors: 3}
+    per_step: {turns: 0.09, max_turns: 150, model_calls: 0.4, wall_clock_s: 12.0}
+  reviser:
+    budgets: {wall_clock_s: 1800}
+    limits: {max_model_calls: 40, wall_clock_s: 1800, max_format_errors: 3}
+    per_step: {model_calls: 0.1, wall_clock_s: 4.5}
+  # The Demo Reader gates all of S1, and fitting every spec and writing the Memory takes many
+  # long calls, so it gets the longest wall clock.
+  demo_reader:
+    budgets: {wall_clock_s: 5400}
+    limits: {max_model_calls: 80, wall_clock_s: 5400, max_format_errors: 3}
+    per_step: {model_calls: 0.2, wall_clock_s: 13.5}
+
+protocols:
+  imitate:
+    max_attempts: 60        # S1 attempts on the demo seed at most (not scaled: each attempt's
+                            # own bounds grow with the task)
+    exit_passes: 3          # unhinted passes among the last exit_window unhinted attempts exit
+    exit_window: 5          # (an early stop: 3 of the last 5)
+    hinted_after: 2         # unhinted failures in a row insert one hinted attempt
+    # hinted_max_turns: 40  # optional (off: hinted attempts keep the Actor's own turn budget):
+                            # a hinted attempt ends at the smaller of its budget and this
+    # S1 attempts may use privileged tools. S2 and P3 run at D regardless.
+    tier: P
+    grip_threshold: 0.5     # on the commanded gripper value, as the keypoints
+    path_step_m: 0.005      # the referee's path interpolation, well inside its z tolerance
+    # The keypoint referee (roboscript.demos.RefereeConfig; docs/concepts/learning.md). An attempt
+    # passes with the official success and the demonstration's keypoints passed in order. The
+    # official success has the higher priority and the keypoints only guard against a skipped key
+    # operation, so they ask whether an operation happened, not how precisely.
+    #
+    # A keypoint counts as reached within xy_m / z_m of it, or size_share of the size of the
+    # object acted on where that is larger. A grasp or release is judged by its object, at any
+    # distance from the keypoint; a skipped one, or one on another object, fails. A lift, carry
+    # or turn is judged by its held object, not the TCP: it left its support the demonstration's
+    # way by 1 cm, and at a turn turned about the demonstration's axis, its way, by 15 degrees.
+    # An official success made with the other arm is judged on the swapped arms. Once the
+    # official check has latched, a keypoint only shows that its step happened (a grasp by the
+    # object it held, or the TCP at it as the gripper changed; placements by order) and a lift
+    # is its object raised off its support, half the demonstration's rise up to 3 cm (lift_share,
+    # lift_cap_m; a demonstration's rise under lift_floor_m, 3 cm, is no lift); every keypoint
+    # before the demonstration's success frame is owed by the latch. Order across different
+    # objects is free: each object's steps come in their order, with any object first and by
+    # either arm. An object lifted with the gripper and dropped before the open counts as held.
+    # A Memory spec refused before anything moved must be carried out as stored later in the
+    # attempt.
+    referee:
+      xy_m: 0.08
+      z_m: 0.05
+      size_share: 0.5       # half the object's width and height where larger
+      turn_share: 0.5       # a pour or dump shows half the demonstration's turn, its way
+    images: 3               # key images in the Reviser's brief
+  practice:
+    max_seeds: 60           # counted seeds, then "not converged"
+    stop_passes: 3          # first-try passes among the last stop_window counted seeds stop
+    stop_window: 5          # early ("converged": 3 of the last 5)
+    diagnosis: true         # the Reviser sees the ground-truth diagnosis
+    budget_factor: 1        # times the schedule's cache budget B_k (memory.yaml)
+    images: 3
+    demo_context: none      # the Actor reads no demonstration: a clean one-shot (none|goal|ops|full)
+  evaluate:
+    count: 10

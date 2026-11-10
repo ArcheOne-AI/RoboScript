@@ -1,0 +1,59 @@
+# What the referee knows of each RoboTwin task (RoboTwin c364c8e). Simulator side only: no
+# agent-side object reads or carries it, and tests/benchmarks/robotwin/test_prompt_hygiene.py
+# keeps its words out of every model-visible text.
+#   objects: the task-object attributes the referee reads (referee.task_objects: every attribute
+#            holding RoboTwin actors, a list as name[i]), checked against envs/<task>.py by
+#            test_sim.py
+#   notes:   success-check details from envs/<task>.py (check_success). Which arm a task judges
+#            is for S2 to learn across seeds (one demo seed cannot test it), never agent input.
+tasks:
+  adjust_bottle: {objects: [bottle]}
+  beat_block_hammer: {objects: [hammer, block]}
+  blocks_ranking_rgb: {objects: [block1, block2, block3]}
+  blocks_ranking_size: {objects: [block1, block2, block3]}
+  click_alarmclock: {objects: [alarm], notes: "the arm on the alarm clock's side must close its gripper before pressing"}
+  click_bell: {objects: [bell], notes: "the arm on the bell's side must close its gripper before pressing"}
+  dump_bin_bigbin: {objects: [deskbin, dustbin]}
+  grab_roller: {objects: [roller]}
+  handover_block: {objects: [box, target_box], notes: "success checks the right gripper"}
+  handover_mic: {objects: [microphone]}
+  hanging_mug: {objects: [mug, rack]}
+  lift_pot: {objects: [pot]}
+  move_can_pot: {objects: [pot, can], notes: "both grippers must end open"}
+  move_pillbottle_pad: {objects: [pillbottle, pad]}
+  move_playingcard_away: {objects: [playingcards]}
+  move_stapler_pad: {objects: [stapler, pad]}
+  open_laptop: {objects: [laptop], notes: "success reads the arm the expert pre-run chose (arm_tag, set in play_once)"}
+  open_microwave: {objects: [microwave]}
+  pick_diverse_bottles: {objects: [bottle1, bottle2]}
+  pick_dual_bottles: {objects: [bottle1, bottle2]}
+  place_a2b_left: {objects: [object, target_object]}
+  place_a2b_right: {objects: [object, target_object]}
+  place_bread_basket: {objects: [breadbasket, "bread[0]", "bread[1]"]}
+  place_bread_skillet: {objects: [skillet, bread]}
+  place_burger_fries: {objects: [hamburg, tray, frenchfries]}
+  place_can_basket: {objects: [can, basket]}
+  place_cans_plasticbox: {objects: [object1, plasticbox, object2]}
+  place_container_plate: {objects: [plate, container]}
+  place_dual_shoes: {objects: [left_shoe, right_shoe, shoe_box]}
+  place_empty_cup: {objects: [cup, coaster]}
+  place_fan: {objects: [fan, pad]}
+  place_mouse_pad: {objects: [mouse, target]}
+  place_object_basket: {objects: [object, basket]}
+  place_object_scale: {objects: [scale, object], notes: "success reads the arm the expert pre-run chose (arm_tag, set in play_once); that gripper must end open"}
+  place_object_stand: {objects: [object, displaystand]}
+  place_phone_stand: {objects: [phone, stand]}
+  place_shoe: {objects: [shoe, target_block]}
+  press_stapler: {objects: [stapler]}
+  put_bottles_dustbin: {objects: ["bottles[0]", "bottles[1]", "bottles[2]", dustbin]}
+  put_object_cabinet: {objects: [cabinet, object], notes: "success reads the arm and the object height the expert pre-run recorded (arm_tag, origin_z, set in play_once); that gripper must end open"}
+  rotate_qrcode: {objects: [qrcode]}
+  scan_object: {objects: [scanner, object]}
+  shake_bottle: {objects: [bottle]}
+  shake_bottle_horizontally: {objects: [bottle]}
+  stack_blocks_three: {objects: [block1, block2, block3, last_actor]}
+  stack_blocks_two: {objects: [block1, block2, last_actor]}
+  stack_bowls_three: {objects: [bowl1, bowl2, bowl3]}
+  stack_bowls_two: {objects: [bowl1, bowl2]}
+  stamp_seal: {objects: [seal, target]}
+  turn_switch: {objects: [switch]}

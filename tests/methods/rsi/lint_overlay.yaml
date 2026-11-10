@@ -1,0 +1,9 @@
+# An invented benchmark vocabulary over the generic RSI lint rules, for the lint's tests: the
+# words they name (`roboscript.memory.config.overlaid`).
+everywhere:
+  evaluator:
+    words: [success_probe, judge_score, step_budget]
+global_only:
+  simulator:
+    message: GLOBAL holds experience a real robot could use; name no simulator
+    words: [simx, physim]

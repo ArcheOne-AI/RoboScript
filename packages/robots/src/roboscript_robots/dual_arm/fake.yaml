@@ -1,0 +1,40 @@
+# Two arms for tests and tutorials (FakeBackend): each arm's six "joints" are its ee pose in the
+# world, x, y, z in meters then roll, pitch, yaw in radians.
+name: fake_dual_arm
+world_axes: x to the robot's right, y forward (away from the robot), z up
+arms:
+  left:
+    joints: [left_x, left_y, left_z, left_roll, left_pitch, left_yaw]
+    ee_link: left_ee
+    ee_to_tcp: [0.1, 0.0, 0.0]
+    gripper: {joint: left_finger_gap, scale: [0.0, 0.08], empty: 0.0, holding_threshold: 0.1}
+    grasp: {tilt: [0, 1], top_down: [0.7071068, 0, 0.7071068, 0], side: [0.7071068, 0, 0, 0.7071068]}
+    home: [-0.25, -0.2, 0.95, 0.0, 1.5707963267948966, 0.0]
+    stops: [[-0.8, 0.8], [-0.7, 0.7], [0.7, 1.5], [-3.2, 3.2], [-3.2, 3.2], [-3.2, 3.2]]
+  right:
+    joints: [right_x, right_y, right_z, right_roll, right_pitch, right_yaw]
+    ee_link: right_ee
+    ee_to_tcp: [0.1, 0.0, 0.0]
+    gripper: {joint: right_finger_gap, scale: [0.0, 0.08], empty: 0.0, holding_threshold: 0.1}
+    grasp: {tilt: [0, 1], top_down: [0.7071068, 0, 0.7071068, 0], side: [0.7071068, 0, 0, 0.7071068]}
+    home: [0.25, -0.2, 0.95, 0.0, 1.5707963267948966, 0.0]
+    stops: [[-0.8, 0.8], [-0.7, 0.7], [0.7, 1.5], [-3.2, 3.2], [-3.2, 3.2], [-3.2, 3.2]]
+cameras:
+  head_camera: {kind: head, type: Large_D435, width: 640, height: 480}
+  left_camera: {kind: wrist, arm: left, type: D435, width: 320, height: 240}
+  right_camera: {kind: wrist, arm: right, type: D435, width: 320, height: 240}
+poses:
+  contact_to_grasp: [[0.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 1.0, 0.0]
+  placement_rotation: [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 10
+tasks:
+  hand_over: {instruction: hand the object from one gripper to the other, step_limit: 120}
+limits:
+  control_hz: 200
+  workspace_min: [-0.6, -0.5, 0.76]
+  workspace_max: [0.6, 0.5, 1.3]
+  max_tcp_speed_m_s: 1.0
+  max_joint_speed_rad_s: 3.0
+  heartbeat_timeout_s: 5.0

@@ -1,0 +1,25 @@
+RoboScript
+Copyright 2026 The RoboScript Authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE), except that the
+portions below remain under their own licenses. Benchmark simulators and their assets are not part
+of this repository; they are obtained separately under their own licenses.
+
+This product includes code adapted from the following software.
+
+RoboTwin (https://github.com/RoboTwin-Platform/RoboTwin, commit c364c8e)
+Copyright (c) 2025 Tianxing Chen (陈天行)
+MIT License; full text in LICENSES/RoboTwin-MIT.txt
+  packages/core/src/roboscript/manipulation/posemath.py
+    adapted from envs/_base_task.py, envs/utils/transforms.py and envs/robot/robot.py
+  packages/benchmarks/robotwin/src/roboscript_robotwin/eval/shard_client.py
+    evaluation loop adapted from script/eval_policy_client.py
+  packages/benchmarks/robotwin/src/roboscript_robotwin/task_configs/
+    adapted from task_config/
+
+transforms3d (https://github.com/matthew-brett/transforms3d, version 0.4.2)
+Copyright (c) 2009-2024, Matthew Brett and Christoph Gohlke
+BSD 2-Clause License; full text in LICENSES/transforms3d-BSD.txt
+  packages/core/src/roboscript/manipulation/posemath.py
+    axangle and mat2quat follow transforms3d.axangles.axangle2mat and
+    transforms3d.quaternions.mat2quat

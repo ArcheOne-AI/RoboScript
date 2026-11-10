@@ -1,0 +1,23 @@
+# RoboScript's policy for RoboTwin's official evaluation (roboscript_robotwin.eval). The first block holds
+# the official fields (policy/Your_Policy/deploy_policy.yml); the launcher (roboscript_robotwin.eval.launch)
+# passes the null ones per run as --overrides to script/policy_model_server.py and
+# script/eval_policy_client.py (the host's fields to the server only).
+policy_name: RoboScript
+task_name: null
+task_config: null       # rs_agentic_clean_p3 or rs_agentic_randomized_p3 (linked into task_config/)
+ckpt_setting: null      # the Memory manifest id (mf-...), which names the official result directory
+seed: null              # the official seed block: 0 evaluates seeds from 100000, 1 from 200000
+instruction_type: unseen
+
+# The Agent host that runs the agent (agent venv), and the file with its bearer token (only its
+# owner may read it; the launcher writes one per run); null: RS_HOST_TOKEN in the policy
+# server's environment or .env (found through RS_ROOT).
+host_url: null
+host_token_file: null
+host_timeout_s: 20      # each call as a whole; at most 20, below the client's 30 s socket timeout
+submit_timeout_s: 40    # a submit across polls (its frames go to disk first); below the Agent
+                        #   host's bridge.observe_timeout_s (50)
+blob_dir: null          # the blob store shared with the host; null: RS_BLOB_DIR (the launcher's)
+hold_actions: 10        # once the agent acts no more: actions held still per eval() call (a
+                        #   lost episode holds to the step limit at once)
+shard: null             # a shard's server (the launcher's --shard k): its own host slot

@@ -1,0 +1,32 @@
+# A single arm for tests and tutorials (FakeBackend): the arm's six "joints" are its ee pose in
+# the world, x, y, z in meters then roll, pitch, yaw in radians. Copy it as the start of a real
+# arm's configuration and replace the names, stops, home pose and limits with the arm's own.
+name: fake_single_arm
+world_axes: x to the robot's right, y forward (away from the robot), z up
+arms:
+  arm:
+    joints: [arm_x, arm_y, arm_z, arm_roll, arm_pitch, arm_yaw]
+    ee_link: arm_ee
+    ee_to_tcp: [0.1, 0.0, 0.0]
+    gripper: {joint: arm_finger_gap, scale: [0.0, 0.08], empty: 0.0, holding_threshold: 0.1}
+    grasp: {tilt: [0, 1], top_down: [0.7071068, 0, 0.7071068, 0], side: [0.7071068, 0, 0, 0.7071068]}
+    home: [0.0, -0.2, 0.95, 0.0, 1.5707963267948966, 0.0]
+    stops: [[-0.8, 0.8], [-0.7, 0.7], [0.7, 1.5], [-3.2, 3.2], [-3.2, 3.2], [-3.2, 3.2]]
+cameras:
+  head_camera: {kind: head, type: Large_D435, width: 640, height: 480}
+  wrist_camera: {kind: wrist, arm: arm, type: D435, width: 320, height: 240}
+poses:
+  contact_to_grasp: [[0.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 1.0, 0.0]
+  placement_rotation: [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 10
+tasks:
+  lift_object: {instruction: lift the object in front of the robot, step_limit: 60}
+limits:
+  control_hz: 200
+  workspace_min: [-0.6, -0.5, 0.76]
+  workspace_max: [0.6, 0.5, 1.3]
+  max_tcp_speed_m_s: 1.0
+  max_joint_speed_rad_s: 3.0
+  heartbeat_timeout_s: 5.0

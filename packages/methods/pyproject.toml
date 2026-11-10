@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript-methods"
+description = "Built-in learning methods for RoboScript"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+dependencies = ["roboscript"]
+
+[project.urls]
+Homepage = "https://github.com/ArcheOne-AI/RoboScript"
+Repository = "https://github.com/ArcheOne-AI/RoboScript"
+
+# Built-in implementations register like third-party ones.
+[project.entry-points."roboscript.methods"]
+wicl = "roboscript_methods.wicl.method:Wicl"
+rsi = "roboscript_methods.rsi.method:Rsi"
+"wicl+rsi" = "roboscript_methods.wicl_rsi:WiclRsi"
+skill_builder = "roboscript_methods.skill_builder.method:SkillBuilderMethod"
+
+[project.entry-points."roboscript.toolsets"]
+demo = "roboscript_methods.wicl.toolsets.demo:Demo"
+done = "roboscript_methods.wicl.toolsets.done:Done"
+rsi = "roboscript_methods.rsi.toolset:RsiTools"
+
+[project.entry-points."roboscript.artifact_stores"]
+rsi = "roboscript_methods.rsi.store:FileRsiStore"
+
+[project.entry-points."roboscript.protocols"]
+imitate = "roboscript_methods.wicl.imitate:Imitate"
+practice = "roboscript_methods.wicl.practice:Practice"
+
+[tool.hatch.version]
+path = "src/roboscript_methods/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript_methods"]

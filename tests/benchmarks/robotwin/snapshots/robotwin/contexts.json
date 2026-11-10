@@ -1,0 +1,146 @@
+{
+  "s1-P-actor_s1_hinted__beat_block_hammer": {
+    "tools": "tools/s1-P-actor_hinted.json",
+    "tools_sha256": "2e9acb4b91557426ed19930098e86920aa0e6618a606713b6cfe0f9f7bb8909d",
+    "instructions_sha256": "04fcd1b4c644db8e7de05503a3b806f6a10dbd43f362f8307b5384b624a7b3d9",
+    "context_sha256": "a5f9e00b9b4b06c1746e057b79253ec734a2b50f97177c538a76e2c69443fae9"
+  },
+  "s1-P-actor_s1_hinted__handover_block": {
+    "tools": "tools/s1-P-actor_hinted.json",
+    "tools_sha256": "2e9acb4b91557426ed19930098e86920aa0e6618a606713b6cfe0f9f7bb8909d",
+    "instructions_sha256": "2dda80e6f12708dc5c04fd286002ae0e1f9e4a02ab14162a414463f509e10e24",
+    "context_sha256": "9adaeb5b9b322481901a66541238b44d972075a4ee444c1b09566a8aa39995e6"
+  },
+  "s1-P-actor_s1_hinted__open_microwave": {
+    "tools": "tools/s1-P-actor_hinted.json",
+    "tools_sha256": "2e9acb4b91557426ed19930098e86920aa0e6618a606713b6cfe0f9f7bb8909d",
+    "instructions_sha256": "ceedee2678d65ab14c7373a949b3eda374bc27910299c90b72965295adaf8e4f",
+    "context_sha256": "eef9c7e5b67cf49aeefef6cf762ee1b42110d8eb46ee5553fdabe0738f08b43b"
+  },
+  "s1-P-actor_s1__beat_block_hammer": {
+    "tools": "tools/s1-P-actor_unhinted.json",
+    "tools_sha256": "ba7c45c30fc25c90f4fd6fee1fa3dba5db5fb31450222527f4572bb5a5ee3267",
+    "instructions_sha256": "1065800eddd59b77a4a42e9960c1395a5979a5c6ede6940ba871c567fab2e1d7",
+    "context_sha256": "901218c1b188dd2821c317a7cd989d5d2b0e972c9e09abf2ea7b47ea7d02dc60"
+  },
+  "s1-P-actor_s1__handover_block": {
+    "tools": "tools/s1-P-actor_unhinted.json",
+    "tools_sha256": "ba7c45c30fc25c90f4fd6fee1fa3dba5db5fb31450222527f4572bb5a5ee3267",
+    "instructions_sha256": "e59f793ecbb4b2f9c6fd0c0fd8554379ee05697dbd298970cb35bd5e07b698ea",
+    "context_sha256": "e2a6b63193b2da97a573268f3328fbd479831895f8f7b8f47c465700ce5ccb35"
+  },
+  "s1-P-actor_s1__open_microwave": {
+    "tools": "tools/s1-P-actor_unhinted.json",
+    "tools_sha256": "ba7c45c30fc25c90f4fd6fee1fa3dba5db5fb31450222527f4572bb5a5ee3267",
+    "instructions_sha256": "71f9eefbd8438e2cc6bd5cd535ecbbfea44313eec046a23c8b6911e939c0a1f0",
+    "context_sha256": "d91a4979db4fb9b60c1a9c173279328a50d17740bca60b3c37f24eed0c84f786"
+  },
+  "s1-P-demo_reader__beat_block_hammer": {
+    "tools": "tools/s1-P-demo_reader.json",
+    "tools_sha256": "d28f6bd83812e73af88f2f027792231810d116c2fd385b5c175ed7308fba7497",
+    "instructions_sha256": "b6e0fc0150a3d5ba29f643e22b8d5a6d229b976c16744849ef0e9b901d0152de",
+    "context_sha256": "a790a64bd7ef0d5878c97e62cef2f06487d75b1044595f782175feb991ce2ea9"
+  },
+  "s1-P-demo_reader__handover_block": {
+    "tools": "tools/s1-P-demo_reader.json",
+    "tools_sha256": "d28f6bd83812e73af88f2f027792231810d116c2fd385b5c175ed7308fba7497",
+    "instructions_sha256": "a57c7f6667c367022991611b777253bf2ae57561a85ab83743ddd05fe533be12",
+    "context_sha256": "d5f986fe4aa2c09bddce6ca8aaebbe8518abf890a0ea6c978d5c6ab7b9ba0958"
+  },
+  "s1-P-demo_reader__open_microwave": {
+    "tools": "tools/s1-P-demo_reader.json",
+    "tools_sha256": "d28f6bd83812e73af88f2f027792231810d116c2fd385b5c175ed7308fba7497",
+    "instructions_sha256": "c2f6a7bd0ddf13dedb333876d6b6fdd01a94901b210e948ddfa9086a57a090d9",
+    "context_sha256": "d2271fc9df8c2f0cd06d24ab726b5ca0b2fcf7f535e024ddabe828e9abd80ef8"
+  },
+  "s1-P-reviser_s1__beat_block_hammer": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "d5c1f8340a580dfd1c9f0efc6849be8f981ad9552f899bb21c024ebc2e429d61",
+    "context_sha256": "a168511b1a2ef0d4ccd17e4452f5d5ef3f5dedfacb534a41df0fdedd12901b10"
+  },
+  "s1-P-reviser_s1__handover_block": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "fb8fce053b813a5b1cc41e77071ee9809d6718cea6c256c42ca85ca55d0b4756",
+    "context_sha256": "957a3758b553790b786c38f86202c13bfccb33ca94d4272f8c89c6b8f6ba66bb"
+  },
+  "s1-P-reviser_s1__open_microwave": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "a32e591d7249ce7ebcf05b20219eb3b159b38d422981684ba6deb531e97d909d",
+    "context_sha256": "f746e51c28940c5e8d010e919052e6b64934216e3d362d9f088980d6b41c71e1"
+  },
+  "s1-P-criteria__beat_block_hammer": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "2f692edad8eb9bcf19fac9e9b7a8d5bbf782679501aaa883b25ab20ad45e628d",
+    "context_sha256": "fa72361e83b8244f3088b638e4ab256649572161d7acc49071993cb13192cab2"
+  },
+  "s1-P-criteria__handover_block": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "f0fecd7224ea782e96cb16b0341653c86adfb030bd2eb83fed255fb0fcd97ca5",
+    "context_sha256": "51bdbad50c10948b3efd0b5c960d41d499beabf2fa1589ceb34fb6de90c18ffc"
+  },
+  "s1-P-criteria__open_microwave": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "f3cd599ff4118ed89d30a467fcd80964bc635a73e286c97a0c4f8c6f4014371e",
+    "context_sha256": "541e473850ca0dc08f3689e35ceea67b3596cdea6f83a1f19827556a6f123166"
+  },
+  "s1-P-cleanup__beat_block_hammer": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "17a06aed82c115f57f34c21bafc7542bc09054ce219acfd21fcaeea3eea0cb0b",
+    "context_sha256": "79ef3051a8a24c4f26b7a8256ff3f8360cfe7ed84f54de8d1c9e7c141d1598f3"
+  },
+  "s1-P-cleanup__handover_block": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "976feda3b5b1eec262509133284141ff5d6f3c48f91a839b10dc214e32b718f3",
+    "context_sha256": "43463350f7f15fdbf63edebe883f602bdb275dfbc6a1716904906c1cf98e795b"
+  },
+  "s1-P-cleanup__open_microwave": {
+    "tools": "tools/s1-P-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "09db506fa19cb6abc1aa2e8f899b600a12024d55679bd67b98e2dbf1d9b3a0e0",
+    "context_sha256": "7d496399e1d7c7ec450087bcc366a4a1d25614a1ecd5558850f180f6a6020c5e"
+  },
+  "s2-D-actor_s2__beat_block_hammer": {
+    "tools": "tools/s2-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "00ad57800984febd2c1c865bd5ecaedd3affc0eefa8009db66723c455f1f6098",
+    "context_sha256": "c8f69f85a54a6aed341b42fe3db14147fe07ac9b6c78f377a90cbdea0daed4eb"
+  },
+  "s2-D-actor_s2__handover_block": {
+    "tools": "tools/s2-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "0f2eb5fb83ccdb27e415f2fb73430cd9b24c2254f2648a325fd6502bab7b330f",
+    "context_sha256": "a9a8acfd5abc0cd0d29a4de676f17b5f12834139a0ce011688a53c792f2c4798"
+  },
+  "s2-D-actor_s2__open_microwave": {
+    "tools": "tools/s2-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "49b80057e775f9a4d185e1736e130445884034ef67d5134807528e7ec9da4d0a",
+    "context_sha256": "0846f179cd6fbbbf0896c9805cd8f044cf9331f1804fe4dd9fb9d4d810b06e67"
+  },
+  "s2-D-reviser_s2__beat_block_hammer": {
+    "tools": "tools/s2-D-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "017d3ad99211d91d8473f15949c52cb0faac7f89b033389a352493240d43dc2b",
+    "context_sha256": "01c072330b663a789b3501ec003f7c57a06fec092523babb8c52fb35387960d7"
+  },
+  "s2-D-reviser_s2__handover_block": {
+    "tools": "tools/s2-D-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "ce7bf4ca06f0f47bb45b35ec3a6aee1b2535d4c617b7171c93bdce90eb6a4840",
+    "context_sha256": "524f605d03aa9dfed0597dfd9a81920c932f999d13004bb0032f6af46c058b15"
+  },
+  "s2-D-reviser_s2__open_microwave": {
+    "tools": "tools/s2-D-reviser.json",
+    "tools_sha256": "bd0d4da8e6ea79155f36fa0c22e3d4b562484f41e1d3900e540c50bf454ea66f",
+    "instructions_sha256": "dd6f2a7332cfc24acc5491850cbf885a722a48120313986abf05aeb8ace14ff8",
+    "context_sha256": "018fc1da3638a0ffe87d54ea55db27c09fd448348a04b3936aa3551d23273e0c"
+  }
+}

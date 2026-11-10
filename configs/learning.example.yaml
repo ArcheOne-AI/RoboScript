@@ -1,0 +1,51 @@
+# The learning protocols' deployment settings (roboscript.learning.LearningConfig). Copy to
+# configs/learning.yaml (git-ignored). The method's parameters (budgets per role, S1, S2 and
+# evaluate settings) are in the recipe's protocols.yaml, not here. Relative paths are relative to
+# the repository root.
+
+# Where a run writes: run.json, events.jsonl, and per task <task>/{memory,S1,S2,eval}/.
+run_dir: runs/dev
+# The method: its phases and roles (which role sees which tools, at which tier, under which rules);
+# a name in the roboscript.methods entry-point group, or package.module:Class.
+method: wicl
+# The recipe: prompts/, memory.yaml, memory_lint.yaml, protocols.yaml.
+recipe: recipes/wicl
+# A benchmark's lint vocabulary over the recipe's generic rules (null: those alone).
+lint_overlay: null
+
+# The brain of each role: a name in the roboscript.brains entry-point group and its config
+# (responses: roboscript.agent.ResponsesConfig, see configs/agent.example.yaml). Models are names
+# from your gateway config.
+brains:
+  actor:
+    name: responses
+    config:
+      model: brain-default
+      reasoning_effort: low
+      context: {windows: {brain-default: 272000}}  # the model's context window, in tokens
+  reviser:  # several Memory edits per reply
+    name: responses
+    config:
+      model: brain-default
+      reasoning_effort: medium
+      context: {windows: {brain-default: 272000}}
+      parallel_tool_calls: true
+      history: {tool_images: 16}  # reads many frames in one long turn
+  demo_reader:
+    name: responses
+    config:
+      model: brain-default
+      reasoning_effort: medium
+      context: {windows: {brain-default: 272000}}
+      parallel_tool_calls: true
+      history: {tool_images: 16}  # reads many frames in one long turn
+
+# S1 and S2 re-run an episode that ended for infrastructure reasons (a faulted simulator, a
+# gateway failure, an env that did not open) at most this many times, then the task stops; each
+# re-run waits its infra_backoff_s first (the last value for any beyond the list; [] for none).
+max_infra_reruns: 3
+infra_backoff_s: [10, 30, 90]
+# Seconds for each call to an env server's control plane, and for `open` (an env's expert
+# pre-run, if it has one).
+env_timeout_s: 120
+open_timeout_s: 900

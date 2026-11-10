@@ -1,0 +1,22 @@
+# A remote toolset server (roboscript.integrations.mcp.serve, docs/how-to/remote-toolsets.md):
+# copy to configs/toolset-server.yaml and serve a registered toolset with
+#   python -m roboscript.integrations.mcp.serve --toolset <name> --config toolset-server
+# A Hub mounts it by URL (hub-server.yaml: `{name: <name>, url: <url>/mcp}`). It takes only the
+# Hub's service tokens, verified with RS_HUB_SERVICE_KEY from .env (derived from the Hub's
+# RS_HUB_SECRET: roboscript.hub.tokens.service_key); it never holds the Hub's secret.
+host: 127.0.0.1
+port: 0                     # 0 picks a free port; the ready file names it
+blobs: null                 # the Hub's blob store (a directory or http(s) URL); null: RS_BLOB_DIR
+events: null                # the server's own event log, e.g. logs/toolset-perception.jsonl
+env_timeout_s: 300          # per request to an episode's env (agent plane)
+state_idle_s: 3600          # an episode's toolset state is dropped this long after its last call,
+                            # if the Hub never closed the episode here
+
+skillsets: []               # the skillsets mounted on it (roboscript.skillsets), e.g.
+                            # [my_benchmark] for manipulation or perception; the Hub mounting it names the
+                            # same
+embodiment: null            # the robot it mounts for (an embodiment name or a profile's YAML): its
+                            # tools that do not fit it are left out; the Hub names the same; null:
+                            # no fit check
+toolset:                    # the toolset's own config (its Config model)
+  act_seconds: 2.0          # e.g. the Mock toolset's

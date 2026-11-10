@@ -1,0 +1,65 @@
+# Machine-local config and secrets: only the examples are tracked
+.env
+.env.*
+!.env.example
+!.env.api.example
+configs/**/*.yaml
+configs/**/*.yml
+!configs/**/*.example.yaml
+examples/**/configs/**/*.yaml
+examples/**/configs/**/*.yml
+!examples/**/configs/**/*.example.yaml
+
+# Test results: one directory per run, see roboscript.testing.pytest_plugin
+/test-results/
+
+# Run directories and outputs
+# .roboscript/: endpoints.json, gateway state, ready files, sockets, rendered runtime configs
+/.roboscript/
+/runs/
+/data/
+/logs/
+*.log
+nohup.out
+*.sqlite
+*.sqlite-*
+
+# External checkouts (e.g. RoboTwin) and model weights
+/third_party/
+/weights/
+/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Git worktrees
+/.worktrees/
+
+# Developer-local scripts and notes
+/.dev/
+
+# Python and tool caches, build outputs
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.import_linter_cache/
+.grimp_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+*.egg-info/
+# documentation build output
+/site/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,53 @@
+# The RSI document's lint vocabulary (roboscript_methods.rsi.recipe.RsiLintConfig). It keeps
+# simulator internals and scene-specific words out of the document. Each rule
+# names what must not appear in what an Actor reads of an entry (when, do, check): words and
+# phrases and regular expressions, any case, matched between alphanumeric boundaries
+# (roboscript.memory.linter.VocabularyRule). `everywhere` applies to every part, `global_only`
+# to GLOBAL. Built in besides (rsi.lint): GLOBAL holds no digit, no task name of the run (the
+# benchmark's task list) and no object instance; `do` holds no number in any part (numbers are
+# the Task Memory's). Object-relative directions (right of the container, tip left) stay allowed:
+# `absolute_arm` refuses only left or right bound to an arm, hand or gripper.
+everywhere:
+  seed:
+    message: seeds are episode-specific; write what holds on every seed
+    patterns:
+      - '(?<![^\W_])seeds?[\s_#:=-]*\d+'
+      - '(?<![^\W_])\d{5,}(?![^\W_])'          # seed blocks and episode keys
+  coordinate:
+    message: coordinates are one scene's; write the relation to an object, a part or the gripper
+    patterns:
+      - '-?\d*\.\d+\s*,\s*-?\d*\.\d+'          # a coordinate pair: 0.12, -0.05
+      - '(?<![^\W_])[xyz]\s*[=:]\s*-?\d'        # x=0.31, y: -0.12
+      - '\(\s*-?\d*\.?\d+\s*,\s*-?\d*\.?\d+\s*(?:,\s*-?\d*\.?\d+\s*)?\)'   # (0.1, 0.2, 0.3)
+  episode_ref:
+    message: >-
+      episodes and seed blocks are the evidence's, never what an Actor reads; write what holds in
+      every episode
+    patterns:
+      - '(?<![^\W_])ep\d+(?![^\W_])'                          # ep003
+      - '(?<![^\W_])episodes?\s*(?:#|no\.?|index)?\s*\d+'     # episode 12, episode #3
+      # block 2, not "the block 2 cm lower"
+      - '(?<![^\W_])blocks?\s*(?:#|no\.?)?\s*\d+(?![\d.])(?!\s*(?:m|cm|mm)(?![^\W_]))'
+      - '[\w-]+/[\w-]+/ep\d+'                                 # block/task/ep003
+  evaluator:
+    message: >-
+      the evaluator's internals exist only in simulation and an Actor never sees them; write what
+      the scene and the robot show
+    words: [success latch, latched, referee, q-score, reward, keypoint, keypoints, diagnosis,
+            diagnostics, ground truth, official success, benchmark, benchmarks, evaluator,
+            evaluators]
+    patterns:
+      - '(?<![^\W_])ground[\s_-]?truth'
+      - '(?<![^\W_])true[\s_-](?:pose|position|yaw)s?(?![^\W_])'
+      - '(?<![^\W_])self\.[a-z_]+'             # task-code attributes
+  absolute_arm:
+    message: >-
+      arms are chosen per scene; name the arm relationally (the instructed arm, the arm on the
+      object's side, the other arm)
+    patterns:
+      # left arm, right-hand grasp, left gripper; not "right-hand side" (a direction)
+      - '(?<![^\W_])(?:left|right)[\s-]+(?:arms?|hands?|grippers?|wrists?|fingers?)(?![^\W_])(?![\s-]+sides?(?![^\W_]))'
+      # the arm on the left; not "the gripper on the left of the pot"
+      - '(?<![^\W_])(?:arms?|hands?|grippers?|wrists?)\s+(?:on|at)\s+the\s+(?:left|right)(?![^\W_])(?!\s+(?:of|side|end|edge))'
+      - '(?<![^\W_])arm\s*[=:]\s*(?:left|right)(?![^\W_])'
+global_only: {}  # a benchmark's overlay names its simulator here

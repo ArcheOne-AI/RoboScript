@@ -1,0 +1,65 @@
+# RoboTwin's binding of a wicl pipeline run (robotwin_pipeline.PipelineConfig;
+# docs/concepts/operations.md), layered over the generic recipe (recipes/wicl/pipeline.yaml) and
+# under the machine's config (configs/pipeline.yaml), then --set: the benchmark and its tasks, the
+# recipe it binds, the demonstrations, the env servers, the GPU services they plan and see with,
+# P3's official evaluation and the seed split. protocols.yaml beside it binds the protocol
+# parameters.
+
+benchmark: robotwin
+
+# The tasks to run; empty: all 50 (packages/benchmarks/robotwin/src/roboscript_robotwin/tasks.yaml).
+tasks: []
+
+demo: data/demos/recorded/{task}/package   # the demo package (scripts/record_demos.py): S1's,
+                                           # and S2's and P3's at a demo_context level
+
+# The context windows of the models the runs use, in tokens (every brain's and P3's host's).
+context_windows:
+  {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}
+
+learning:
+  method: wicl
+  recipe: recipes/wicl
+  lint_overlay: examples/simBenchmarks/RoboTwin/run/wicl/memory_lint.yaml
+
+# The env servers' config (roboscript_robotwin.config.RoboTwinConfig) but task and blob_dir.
+# C2C: S1 and S2 run on clean scenes.
+env: {mode: clean}
+
+# Services each GPU runs for its jobs, each in a stack of its own with the pipeline's blob store
+# (roboscript.stack.ServiceSpec, without gpu; the names get -gpu<n>). `planner` is the one S1's
+# referee and the toolsets plan with (the motion service, with the config the demo recording
+# uses); `vision` (GroundingDINO, SAM 3; configs/vision.yaml, blob_dir unset, about 8 GB) is the
+# cross-check of S2's scene toolsets and of P3's, which must identify as S2 did.
+per_gpu:
+  - name: motion
+    module: roboscript.motion
+    interpreter: sim
+    args: [--config, examples/simBenchmarks/RoboTwin/configs/motion.example.yaml]
+    ready_timeout_s: 900
+  - name: vision
+    module: roboscript_vision
+    interpreter: vision
+    args: [--config, vision]
+    ready_timeout_s: 600
+planner: motion
+env_ready_timeout_s: 600     # an env server builds and renders its task before it is ready
+
+p3:
+  # The launcher's config (gpu, motion, host memory per job).
+  config: examples/simBenchmarks/RoboTwin/configs/p3.yaml
+  blocks: [1]                # official seed blocks: 1 from 200000, 0 from 100000
+  episodes: 100              # per block, the official count (fewer stop the client early)
+  randomized: false          # C2R: P3 on randomized scenes too, with the clean-learned Memory:
+                             # true (right after the clean blocks) or spare (lowest priority:
+                             # only while no other job waits for GPU room)
+
+# The learning seed blocks (the official P3 blocks are the benchmark's, 100000 x (1 + s)); the
+# seed_split precheck keeps them and the P3 blocks apart. demo: the demonstrations' seeds 0-67;
+# practice: S2 from protocols.yaml's first_seed, up to the next block (seeds it skips count too);
+# evaluate: the internal validation block, up to the official blocks.
+seeds:
+  blocks:
+    demo: {start: 0, count: 68}
+    practice: {start: 10000, count: 10000}
+    evaluate: {start: 20000, count: 80000}

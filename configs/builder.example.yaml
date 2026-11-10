@@ -1,0 +1,26 @@
+# The P1 skill builder's coding-agent session (roboscript_methods.skill_builder.session.
+# SessionConfig). Copy to configs/builder.yaml (git-ignored) and edit the copy; a benchmark's
+# build script reads it with --builder-config (for example
+# `examples/simBenchmarks/<name>/p1/build.py`).
+# A codex session reaches the model through the RoboScript gateway only: its address comes from
+# configs/gateway.yaml or RS_GATEWAY_URL, its token from RS_GATEWAY_TOKEN in .env; never put a key
+# here.
+
+# codex: the Codex CLI through the gateway. fake: a scripted stand-in with no model and no network
+# (wiring checks and tests).
+backend: codex
+# The gateway's logical model name (configs/gateway.yaml, `models`); required by codex.
+model: <gateway model name>
+# Codex's reasoning effort (model_reasoning_effort); leave unset for Codex's default.
+# effort: high
+# How to start the Codex CLI.
+# command: [codex]
+# Where each session's CODEX_HOME and empty HOME live while it runs (removed after); unset:
+# ~/.cache/rs-builder. Not under /tmp, where Codex refuses its sandbox helper.
+# state_root: /path/to/state
+# fake only: a directory of skill directories the fake session writes and runs.
+# fake_skills: /path/to/skills
+# Absolute directories readable in the sandboxes (the session's and every job's) besides the ones
+# the build script binds. If your planner configs point outside the benchmark's checkout (another
+# checkout's assets, say), list those roots here.
+# sandbox_read_roots: [/path/to/other/assets]

@@ -1,0 +1,11 @@
+# The sensing toolset (roboscript.toolsets.sensing.SensingConfig): cameras and proprioception
+# through the env's agent plane. Copy to configs/sensing.yaml to change it; the values shown
+# are the defaults. Which roles and phases see its tools is the method's declaration.
+
+# A gripper commanded closed holds something when its measured opening is above the embodiment
+# profile's Gripper.holding_threshold, the rule receipts use too.
+
+# Overlays: the TCP axes drawn in fixed (head) views, in meters, and the spacing of the table
+# grid, in meters. The grid appears once the episode's frame store holds the table estimate.
+axes_m: 0.05
+grid_m: 0.1

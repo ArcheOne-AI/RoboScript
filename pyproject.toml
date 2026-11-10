@@ -1,0 +1,256 @@
+# uv workspace root. It is not a package and is never published; shared tool settings live here.
+
+[tool.uv.workspace]
+members = [
+    "packages/core",
+    "packages/vision",
+    "packages/methods",
+    "packages/benchmarks/*",
+    "packages/robots",
+]
+
+[tool.uv]
+# Supply-chain cooldown: resolve only releases that are at least a week old.
+exclude-newer = "7 days"
+
+[tool.uv.sources]
+roboscript = { workspace = true }
+roboscript-behavior = { workspace = true }
+roboscript-methods = { workspace = true }
+roboscript-robotwin = { workspace = true }
+roboscript-robots = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.5",
+    "mypy>=1.18",
+    "pytest>=8.4",
+    "pytest-asyncio>=1.0",
+    "roboscript[mcp]",
+    "roboscript-behavior",
+    "roboscript-methods",
+    "roboscript-robotwin",
+    "roboscript-robots",
+    "ruff>=0.15",
+    "scipy-stubs>=1.15",
+    "types-pyyaml>=6.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+# Listed explicitly so that a copy without .git (where .gitignore does not apply) is linted alike.
+extend-exclude = [
+    "test-results",
+    ".worktrees",
+    "runs",
+    "data",
+    "logs",
+    "weights",
+    "checkpoints",
+    "third_party",
+    ".roboscript",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "ASYNC"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "roboscript",
+    "roboscript_vision",
+    "roboscript_methods",
+    "roboscript_robotwin",
+    "roboscript_behavior",
+    "roboscript_robots",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".*", "*.egg", "build", "dist", "node_modules", "venv", "test-results"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+    "-p", "roboscript.testing.pytest_plugin",
+    "-m", "not sim and not gpu and not model",
+]
+markers = [
+    "unit: no simulator, GPU or network; applied to every test without another marker",
+    "sim: needs a benchmark simulator interpreter",
+    "gpu: needs a GPU",
+    "model: calls real model endpoints; skipped when no key is configured",
+]
+required_plugins = ["pytest-asyncio"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+xfail_strict = true
+tmp_path_retention_policy = "failed"
+log_file_level = "INFO"
+log_file_format = "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
+
+[tool.mypy]
+# Advisory: run `uv run mypy` by hand. CI does not gate on it.
+python_version = "3.10"
+files = [
+    "packages/core/src",
+    "packages/vision/src",
+    "packages/methods/src",
+    "packages/benchmarks/robotwin/src",
+    "packages/benchmarks/behavior/src",
+    "packages/robots/src",
+]
+strict = true
+
+[tool.importlinter]
+root_packages = [
+    "roboscript",
+    "roboscript_vision",
+    "roboscript_methods",
+    "roboscript_robotwin",
+    "roboscript_behavior",
+    "roboscript_robots",
+]
+include_external_packages = true
+
+# "|": siblings must not import each other. ":": they may. Exhaustive: every subpackage of
+# roboscript must be listed.
+[[tool.importlinter.contracts]]
+name = "roboscript layers"
+type = "layers"
+containers = ["roboscript"]
+exhaustive = true
+layers = [
+    "testing",
+    "orchestrate",
+    "integrations : learning",
+    "agent | hub | toolsets | skills | gateway",
+    "tools",
+    "demos : memory",
+    "manipulation",
+    "motion | perception",
+    "embodiments : envs",
+    "rpc : blobs : records : settings : stack",
+    "kernel",
+    "contracts",
+    "spatial",
+]
+
+[[tool.importlinter.contracts]]
+name = "roboscript imports no simulator, GPU, plugin, method, benchmark or robot packages"
+type = "forbidden"
+source_modules = ["roboscript"]
+forbidden_modules = [
+    "torch", "sapien", "curobo", "mplib", "envs", "roboscript_vision", "roboscript_methods",
+    "roboscript_robotwin", "roboscript_behavior", "roboscript_robots",
+]
+# The cuRobo planner adapter, the one exception, imports them inside functions only.
+ignore_imports = ["roboscript.motion.curobo -> torch", "roboscript.motion.curobo -> curobo"]
+
+[[tool.importlinter.contracts]]
+name = "only roboscript.integrations.mcp imports the MCP SDK and its HTTP client"
+type = "forbidden"
+source_modules = ["roboscript"]
+forbidden_modules = ["mcp", "mcp_types", "httpx2", "fastmcp"]
+ignore_imports = [
+    "roboscript.integrations.mcp.* -> mcp",
+    "roboscript.integrations.mcp.* -> mcp_types",
+    "roboscript.integrations.mcp.* -> httpx2",
+]
+
+# Methods, benchmarks and robots depend on the core only and never on each other. None of them
+# imports a simulator or GPU library at module level.
+[[tool.importlinter.contracts]]
+name = "methods import no benchmark, robot, vision, simulator or GPU package"
+type = "forbidden"
+source_modules = ["roboscript_methods"]
+forbidden_modules = [
+    "roboscript_robotwin", "roboscript_behavior", "roboscript_robots", "roboscript_vision",
+    "torch", "sapien", "curobo", "mplib", "envs",
+]
+
+# P4 attaches after any method's evaluation, so it knows no other method.
+[[tool.importlinter.contracts]]
+name = "P4 (rsi) imports no other method"
+type = "forbidden"
+source_modules = ["roboscript_methods.rsi"]
+forbidden_modules = ["roboscript_methods.wicl"]
+
+# P1's builder freezes a skillset that any method mounts: it knows no other method, and none
+# knows it.
+[[tool.importlinter.contracts]]
+name = "P1 (skill_builder) imports no other method"
+type = "forbidden"
+source_modules = ["roboscript_methods.skill_builder"]
+forbidden_modules = [
+    "roboscript_methods.wicl", "roboscript_methods.rsi", "roboscript_methods.wicl_rsi",
+]
+
+[[tool.importlinter.contracts]]
+name = "wicl and rsi import no skill_builder"
+type = "forbidden"
+source_modules = ["roboscript_methods.wicl", "roboscript_methods.rsi"]
+forbidden_modules = ["roboscript_methods.skill_builder"]
+
+[[tool.importlinter.contracts]]
+name = "benchmark packages import no method or robot package"
+type = "forbidden"
+source_modules = ["roboscript_robotwin", "roboscript_behavior"]
+forbidden_modules = ["roboscript_methods", "roboscript_robots", "roboscript_vision"]
+
+[[tool.importlinter.contracts]]
+name = "robot packages import no method or benchmark package"
+type = "forbidden"
+source_modules = ["roboscript_robots"]
+forbidden_modules = [
+    "roboscript_methods", "roboscript_robotwin", "roboscript_behavior", "roboscript_vision",
+]
+
+# The robot server skeleton knows no configuration: single_arm, dual_arm and mobile_manipulator
+# build on `base`, never the other way.
+[[tool.importlinter.contracts]]
+name = "the robot base imports no robot configuration"
+type = "forbidden"
+source_modules = ["roboscript_robots.base"]
+forbidden_modules = [
+    "roboscript_robots.single_arm",
+    "roboscript_robots.dual_arm",
+    "roboscript_robots.mobile_manipulator",
+    "roboscript_robots.testing",
+]
+
+# The agent side never imports the sim side. Only the official client's policy
+# module and the shard client run in RoboTwin's interpreter beside the simulator.
+[[tool.importlinter.contracts]]
+name = "RoboTwin's agent side imports none of its sim side or the simulator"
+type = "forbidden"
+source_modules = [
+    "roboscript_robotwin.benchmark",
+    "roboscript_robotwin.bindings",
+    "roboscript_robotwin.config",
+    "roboscript_robotwin.demos",
+    "roboscript_robotwin.eval.install",
+    "roboscript_robotwin.eval.kinds",
+    "roboscript_robotwin.eval.launch",
+    "roboscript_robotwin.eval.relay",
+    "roboscript_robotwin.eval.report",
+    "roboscript_robotwin.eval.wire",
+    "roboscript_robotwin.frames",
+    "roboscript_robotwin.skills",
+]
+forbidden_modules = ["roboscript_robotwin.sim", "sapien", "envs", "torch", "curobo", "mplib"]
+# The skills reach the core's cuRobo adapter through the manipulation toolset; it imports them
+# inside functions only (as the core's own contract allows).
+ignore_imports = ["roboscript.motion.curobo -> torch", "roboscript.motion.curobo -> curobo"]
+
+# Nothing a package holds imports the examples or tests: their importable top-level modules are
+# listed here.
+[[tool.importlinter.contracts]]
+name = "packages import no example or test code"
+type = "forbidden"
+source_modules = [
+    "roboscript", "roboscript_vision", "roboscript_methods", "roboscript_robotwin",
+    "roboscript_behavior", "roboscript_robots",
+]
+forbidden_modules = ["robotwin_pipeline", "run_s2"]

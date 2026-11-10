@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript-behavior"
+description = "An entry skeleton for integrating the BEHAVIOR challenge with RoboScript"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+dependencies = ["roboscript"]
+# Not for publication: package indexes refuse this classifier.
+classifiers = ["Private :: Do Not Upload"]
+
+[project.entry-points."roboscript.benchmarks"]
+behavior = "roboscript_behavior.benchmark:BEHAVIOR"
+
+[project.entry-points."roboscript.embodiments"]
+r1_pro_behavior = "roboscript_behavior.benchmark:BEHAVIOR.embodiment"  # the YAML profile's path
+
+[tool.hatch.version]
+path = "src/roboscript_behavior/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript_behavior"]

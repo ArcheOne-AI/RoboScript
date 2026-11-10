@@ -1,0 +1,70 @@
+# P3 on RoboTwin (roboscript_robotwin.eval.launch.P3Config): one official evaluation per task x
+# seed block x config, through RoboTwin's own client and server. Copy to
+# examples/simBenchmarks/RoboTwin/configs/p3.yaml (git-ignored) and set this machine's
+# interpreters. Relative paths are relative to the repository root.
+
+interpreters:
+  agent: .venv/bin/python                                        # uv venv: the Agent host
+  sim: /path/to/conda/envs/roboscript-sim/bin/python    # conda: RoboTwin's scripts
+
+# PYTHONPATH of RoboTwin's scripts and the motion service: none of RoboScript's packages is
+# installed in the simulator env.
+sim_pythonpath: [packages/core/src, packages/benchmarks/robotwin/src]
+gpu: 0                        # CUDA_VISIBLE_DEVICES of RoboTwin's scripts and the motion service
+vision_gpu: null              # a started vision service's; null: the least loaded of gpus
+                              #   (nvidia-smi)
+# The GPUs this machine lends, filled from the back of the list.
+gpus: [0]
+# The motion service the host's manipulation toolset plans with, and the scene toolsets filter
+# the robot out with, one of: `config`, the cuRobo service's config
+# (examples/simBenchmarks/RoboTwin/configs/motion.example.yaml copied to configs/motion.yaml) for
+# one the launcher starts on the same GPU before the Agent host; or `url`, a running one to share
+# (one per GPU serves any number of episodes). null only if the host mounts neither the
+# manipulation toolset nor the scene toolsets.
+motion: {config: motion}
+# The vision service the scene toolsets cross-check with (GroundingDINO), one of: `config`, the
+# vision service's config (configs/vision.example.yaml copied to configs/vision.yaml) for one the
+# launcher starts on vision_gpu (set interpreters.vision); or `url` and `blob_dir`, a running one
+# to share and the blob store it shares with its callers (the run's processes then use it). null:
+# no cross-check, which a Memory S2 practised with one refuses (the manifest's `vision`).
+vision: null
+# Where the manipulation toolset keeps targets above the table until perception estimates it, per
+# scene config: RoboTwin's clean scenes put the table top at 0.74 m; randomized ones lower it by up
+# to 3 cm, so their fallback is the floor, which refuses no target above the table.
+table_top_z: {clean: 0.74, randomized: 0.71}
+server_ready_timeout_s: 300   # RoboTwin's policy server imports its envs, then asks the host
+stop_grace_s: 10              # SIGTERM to SIGKILL, per process group
+
+# The Agent host's config (examples/simBenchmarks/RoboTwin/configs/agent_host.example.yaml)
+# without what each run sets: manifest, episodes.records and the manipulation toolset's planner
+# and table height (the blob store is the run's, <out_dir>/blobs).
+host:
+  memory: {name: file, options: {root: runs/memory}}
+  method: wicl
+  recipe: recipes/wicl
+  # The Actor reads the library of every task's frozen Memory and chooses (library, the default),
+  # or the Memory of its task id (bound): configs/agent_host.example.yaml. index null: the
+  # pipeline builds it across the variant's tasks (P3/library.json).
+  memory_access: library
+  memory_library: {index: null, exclude: [], exclude_own: false}
+  episodes:
+    embodiment: packages/benchmarks/robotwin/src/roboscript_robotwin/embodiments/aloha_agilex.yaml
+    guards: {wall_clock_s_per_step: 10.0, model_calls_per_step: 4.0}   # runaway guards only
+  # The scene toolsets identify the objects once as each episode opens, with the motion service
+  # and the vision service above, which the launcher fills in; the grasp relations follow every
+  # action.
+  toolsets:
+    - {name: sensing}
+    - {name: manipulation}   # configs/manipulation.example.yaml, less what each run sets
+    - {name: perception}
+    - {name: geometry}
+    - {name: worldstate}
+    - {name: done}           # wicl's done tools (check_done) on the same scene
+  brain:   # S2's Actor brain (learning.brains.actor), which a launch checks it equals
+    name: responses
+    config:
+      model: brain-default
+      reasoning_effort: high
+      # as the pipeline's context_windows
+      context:
+        windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}

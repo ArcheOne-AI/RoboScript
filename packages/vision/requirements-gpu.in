@@ -1,0 +1,32 @@
+# The vision interpreter's direct requirements (Python 3.11, Linux x86_64): the models' stack,
+# the dependencies of packages/core and the test tools. requirements-gpu.txt is the hashed lock
+# made from this file (see README.md in this directory); edit this file, then compile again.
+# Our own code is not installed there: packages/core/src and packages/vision/src go on
+# PYTHONPATH. Not in uv.lock: the agent venv never installs torch.
+
+# The models. PyPI's torch 2.14.0 Linux wheels are built for CUDA 13.0 and pull the nvidia-*-cu13
+# runtime wheels; the driver must support CUDA 13 (driver 580 or newer).
+torch==2.14.0
+torchvision==0.29.0
+transformers==5.17.0
+packaging==26.3
+
+# packages/core's dependencies, at their uv.lock versions for Python 3.11.
+anyio==4.15.1
+httpx==0.28.1
+numpy==2.4.6
+openai==3.16.2
+pillow==12.3.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+pyjwt==2.14.0
+python-dotenv==1.2.3
+pyyaml==6.0.3
+scipy==1.17.1
+starlette==1.6.0
+typing-extensions==4.16.0
+uvicorn==0.53.0
+
+# The test tools, at their uv.lock versions.
+pytest==9.1.1
+pytest-asyncio==1.4.0

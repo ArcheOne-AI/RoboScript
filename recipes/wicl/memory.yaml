@@ -1,0 +1,54 @@
+# Task Memory settings of the wicl recipe (roboscript.memory.MemoryRecipe; the linter's
+# vocabularies are in memory_lint.yaml). The values are the method's defaults
+# (docs/concepts/learning.md).
+
+# S1: the Demo Reader writes Memory v0 and the Reviser revises it directly, with no budget and no
+# revision limits. INSTRUCTION, the demonstration's instruction, is never edited (nor read by a
+# model); the Demo Reader writes TASK, the task in terms of the roles.
+s1:
+  max_numbers: null
+  trust_radius: false
+
+# S2: the Reviser edits the seed's cache within its budget B_k.
+s2:
+  # Budget units an accepted edit uses.
+  costs:
+    set_number: 0         # numbers are free but limited per revision (below)
+    set_category: 1       # a category, or a spec's categorical field
+    add_lesson: 1
+    edit_lesson: 1
+    remove_lesson: 1
+    edit_stage: 1         # a stage's goal, arm rule or call template: a local workflow edit
+    add_stage: 2          # structure changes need B_k >= 2, so they come early
+    remove_stage: 2
+    move_stage: 2
+    set_done: 2           # completion predicates are structure
+    define_param: 2
+    remove_param: 2
+    set_text: 2           # TASK, OBJECTS or NOTES rewritten
+    scratch: 0
+  # One revision (one Reviser run) changes at most max_numbers numeric targets (a number, or one
+  # numeric field of a spec), each within its trust radius of its value when the revision started,
+  # so that one can tell afterwards which change mattered. An edit asking for more is moved the
+  # radius toward its value (clamp_to_trust) rather than rejected: a correction larger than one
+  # radius still goes the right way, and the next revision may go one radius further.
+  max_numbers: 3
+  trust_radius: true
+  clamp_to_trust: true
+  # Done criteria are only tightened (the Agent's exit stays strict; the
+  # official check alone decides success): an edit that widens a criterion's band, changes what
+  # it measures or removes it is refused. S1's Reviser keeps the same rule (`imitate`).
+  strict_done: true
+
+# The learning-rate decay of S2 (S2 updates the Memory less readily as it
+# goes). At the k-th counted seed: alpha_k = max(alpha_min, 1 / (1 + (k - 1) / tau)), the merge
+# step of numbers, and the cache budget B_k = max(budget_min, round(budget_scale * alpha_k)).
+# tau 10 spreads the decay over practice's 60 seeds: alpha 1.0 at k = 1, 0.53 at k = 10, 0.34 at
+# k = 20, alpha_min from k = 41; B_k = 4 for k <= 2, 3 for k = 3-7, 2 for k = 8-17, then 1.
+# B_k = 1 allows no structural edit (cost 2), so structural edits come in the first 17 seeds.
+schedule:
+  name: decay
+  alpha_min: 0.2
+  tau: 10
+  budget_scale: 4
+  budget_min: 1

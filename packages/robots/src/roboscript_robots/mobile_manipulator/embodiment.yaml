@@ -1,0 +1,201 @@
+# Generated from the fake_mobile_manipulator configuration by RobotConfig.profile_yaml().
+name: fake_mobile_manipulator
+action_dim: 16
+world_axes: x to the robot's right, y forward (away from the robot), z up
+arms:
+  left:
+    joints:
+    - left_x
+    - left_y
+    - left_z
+    - left_roll
+    - left_pitch
+    - left_yaw
+    action:
+    - 0
+    - 6
+    gripper_index: 6
+    ee_link: left_ee
+    ee_to_tcp:
+    - 0.1
+    - 0.0
+    - 0.0
+    gripper:
+      joint: left_finger_gap
+      scale:
+      - 0.0
+      - 0.08
+      open: 1.0
+      closed: 0.0
+      empty: 0.0
+      holding_threshold: 0.1
+      span_m: null
+    planner: null
+    grasp:
+      tilt:
+      - 0.0
+      - 1.0
+      top_down:
+      - 0.7071067811865476
+      - 0.0
+      - 0.7071067811865476
+      - 0.0
+      side:
+      - 0.7071067811865476
+      - 0.0
+      - 0.0
+      - 0.7071067811865476
+    home:
+    - -0.25
+    - -0.2
+    - 0.95
+    - 0.0
+    - 1.5707963267948966
+    - 0.0
+    stops:
+    - - -0.8
+      - 0.8
+    - - -0.7
+      - 0.7
+    - - 0.7
+      - 1.5
+    - - -3.2
+      - 3.2
+    - - -3.2
+      - 3.2
+    - - -3.2
+      - 3.2
+  right:
+    joints:
+    - right_x
+    - right_y
+    - right_z
+    - right_roll
+    - right_pitch
+    - right_yaw
+    action:
+    - 7
+    - 13
+    gripper_index: 13
+    ee_link: right_ee
+    ee_to_tcp:
+    - 0.1
+    - 0.0
+    - 0.0
+    gripper:
+      joint: right_finger_gap
+      scale:
+      - 0.0
+      - 0.08
+      open: 1.0
+      closed: 0.0
+      empty: 0.0
+      holding_threshold: 0.1
+      span_m: null
+    planner: null
+    grasp:
+      tilt:
+      - 0.0
+      - 1.0
+      top_down:
+      - 0.7071067811865476
+      - 0.0
+      - 0.7071067811865476
+      - 0.0
+      side:
+      - 0.7071067811865476
+      - 0.0
+      - 0.0
+      - 0.7071067811865476
+    home:
+    - 0.25
+    - -0.2
+    - 0.95
+    - 0.0
+    - 1.5707963267948966
+    - 0.0
+    stops:
+    - - -0.8
+      - 0.8
+    - - -0.7
+      - 0.7
+    - - 0.7
+      - 1.5
+    - - -3.2
+      - 3.2
+    - - -3.2
+      - 3.2
+    - - -3.2
+      - 3.2
+cameras:
+  head_camera:
+    kind: head
+    type: Large_D435
+    width: 640
+    height: 480
+    arm: null
+  left_camera:
+    kind: wrist
+    type: D435
+    width: 320
+    height: 240
+    arm: left
+  right_camera:
+    kind: wrist
+    type: D435
+    width: 320
+    height: 240
+    arm: right
+poses:
+  contact_to_grasp:
+  - - 0.0
+    - 0.0
+    - 1.0
+    - 0.0
+  - - -1.0
+    - 0.0
+    - 0.0
+    - 0.0
+  - - 0.0
+    - -1.0
+    - 0.0
+    - 0.0
+  - - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+  tcp_closing_axis:
+  - 0.0
+  - 1.0
+  - 0.0
+  object_up:
+  - 0.0
+  - 1.0
+  - 0.0
+  placement_rotation:
+  - - 1.0
+    - 0.0
+    - 0.0
+  - - 0.0
+    - -1.0
+    - 0.0
+  - - 0.0
+    - 0.0
+    - -1.0
+  approach_tilts: 10
+assets_root: null
+joint_groups:
+  torso:
+    joints:
+    - torso_lift
+    - torso_pitch
+    action:
+    - 14
+    - 16
+actions:
+  joint_position: true
+  ee_delta: null
+  base:
+    holonomic: false
+    max_speed_m_s: 0.5
+    max_turn_rad_s: 1.0

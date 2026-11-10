@@ -1,0 +1,30 @@
+# Third-party packages the simulator interpreter needs on top of the RoboTwin environment
+# (Python 3.10): the dependencies of packages/core plus the test tools. Install into a clone
+# of that environment, never into the original, with the user site off so that ~/.local
+# neither satisfies nor shadows anything:
+#   PYTHONNOUSERSITE=1 python -m pip install -r examples/simBenchmarks/RoboTwin/requirements-sim.txt
+# Our own code is not installed there; put packages/core/src, packages/vision/src and
+# packages/benchmarks/robotwin/src on PYTHONPATH instead (README.md in this directory).
+
+# Already in RoboTwin-eval: the lower bounds from packages/core, so pip leaves them alone.
+anyio>=4.11
+httpx>=0.28
+numpy>=1.26
+openai>=2.6
+pillow>=10.2
+pydantic>=2.12
+pyjwt>=2.10
+python-dotenv>=1.1
+pyyaml>=6.0
+scipy>=1.15
+typing-extensions>=4.15
+
+# Missing from RoboTwin-eval, with what they pull in: the versions in uv.lock.
+pydantic-settings==2.15.0
+starlette==1.6.0
+uvicorn==0.53.0
+pytest==9.1.1
+pytest-asyncio==1.4.0
+backports-asyncio-runner==1.2.0
+iniconfig==2.3.0
+pluggy==1.6.0

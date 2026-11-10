@@ -1,0 +1,44 @@
+# P4's reflection rules (roboscript_methods.rsi.recipe.ReflectRules; docs/concepts/learning.md).
+# The episode digest (rsi.digest): keyframes are named around the calls of these tools (start,
+# before and after each grasp, after each place, last), at most `digest_actions` such calls (the
+# first and the last halves; rsi_episode pages through every turn).
+grasp_tools: [grasp_object, close_gripper]
+place_tools: [place_object]
+# The Agent's done check, passed when its result starts with `done_pass` (a passed check without
+# the success latching is a false finish).
+done_tool: check_done
+done_pass: "done: yes"
+# Why the Hub refused a `finish`: a cause's name -> how the refusal's text starts (after its error
+# code). The Hub's and the Agent host's texts (hub.steps.finish, agent.host.LATCH_REFUSAL); a
+# refusal matching none is listed as `other`. tests/methods/rsi ties them to those texts.
+finish_refusals:
+  done check not called after the last action: "Call "
+  done check failed: "The last "
+  success not latched: "the episode has not ended"
+digest_actions: 8
+# The tool whose calls plan the arms (the digest lists each with its answer and the turn's
+# rationale), and how an instruction names an arm (a regular expression, any case).
+arm_tool: plan_arms
+arm_named: '\b(?:left|right)\s+(?:arm|hand|gripper)s?\b'
+# Groups of failed or refused calls (tool and reason) the digest lists, and turns listed per group.
+digest_failures: 8
+digest_turns: 8
+# Images one rsi_frames call returns (frames x cameras), and the longest page of turns
+# rsi_episode returns, in characters.
+frames_per_call: 6
+page_chars: 24000
+# Candidate GLOBAL lessons one task's reflector may stage (the curator decides what goes to GLOBAL).
+lessons: 3
+# Review passes: the reviewer's first pass, then one revision by the author of what it rejected
+# and a second review; still rejected, the proposal is dropped (at most 2).
+passes: 2
+# A round is one reflection pass (reflectors, curator, review) followed by the consolidation step
+# (merges of copies, retirements of task entries repeating GLOBAL or naming nothing of their task,
+# rewordings of entries failing the lint). A second reflection pass over the same round is not
+# part of the protocol.
+consolidate: true
+# Model calls one episode of each role may make.
+limits:
+  reflector: 80
+  curator: 80
+  reviewer: 160

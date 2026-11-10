@@ -1,0 +1,37 @@
+# A P4 run on RoboTwin (robotwin_pipeline.p4.P4Settings; docs/concepts/learning.md):
+# scripts/run_p4.py new examples/simBenchmarks/RoboTwin/run/rsi/p4.yaml --name <run> --import-g1 <dir>
+# Machine paths (root, base, dispatch, demos) are placeholders: set them here or with --set.
+
+root: /path/to/rs-p4/runs             # the run is <root>/<name>/
+base: /path/to/rs-p4/base/sol         # the base pipeline run (read only): its pipeline.yaml
+                                      # and each <task>/default/ (P3/manifest.json,
+                                      # <task>/memory/, <task>/S2/)
+variant: default
+tasks: []                             # empty: every task whose base P3 evaluated a frozen Memory
+
+rounds: 3                             # round r reflects on block r, is evaluated on block r+1;
+                                      # final 5
+# first_read: [1]                    # round 1's read blocks (1 to k); [1, 2]: evaluated on block 3
+episodes: 10                          # the first 10 official episodes of each task per block
+                                      # and mode
+shards: 4
+gates: []                             # rounds to pause after, e.g. [r1]: a person looks at
+                                      # round 1 first
+eval_modes: [clean]
+final_modes: [clean, randomized]
+method: wicl+rsi                  # the RSI arm's Agent host method; the baseline's is P3's own
+recipe: recipes/rsi
+lint_overlay: examples/simBenchmarks/RoboTwin/run/rsi/lint.yaml
+
+dispatch: /path/to/rs-p4/configs/dispatch.yaml      # roboscript.orchestrate.dispatch config of
+                                      # every stage (name, root, tasks, seeds, sha set per stage)
+stage_set: []                         # dotted pipeline overrides every stage adds
+
+reflect:
+  model: gpt-6.1-sol
+  context_window: 1000000
+  effort: high
+  concurrency: 4
+  frames_shown: 12
+  demos: /path/to/rs-p4/demos         # <demos>/<task>/package: the final keyframe's RGB only
+poll_s: 60

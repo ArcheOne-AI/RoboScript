@@ -1,0 +1,14 @@
+# Task Memory (roboscript.memory.MemoryConfig): where Memory versions go and which recipe gives
+# the edit costs, schedule and linter vocabulary. Copy to configs/memory.yaml (git-ignored).
+# Relative paths are relative to the repository root.
+
+store:
+  # A store registered in the roboscript.memory_stores entry-point group, and its options.
+  name: file
+  options:
+    # The file store keeps <root>/<task>/memory/v000/{memory.md, params.json, meta.json} and the
+    # freeze record <root>/<task>/memory/frozen.json.
+    root: runs/memory
+
+# The recipe directory: memory.yaml (edit costs, revision limits, schedule) and memory_lint.yaml.
+recipe: recipes/wicl

@@ -1,0 +1,21 @@
+# The RoboTwin env server (roboscript_robotwin.config.RoboTwinConfig). Copy to robotwin_env.yaml
+# (git-ignored) and run it in the simulator environment:
+#   python -m roboscript_robotwin.sim.host --config examples/simBenchmarks/RoboTwin/configs/robotwin_env.yaml
+# The control-plane token is RS_ENV_TOKEN and RoboTwin's checkout ROBOTWIN_ROOT, both from .env.
+
+# The one task this env process serves (`open` refuses others). It is built and rendered once
+# before the server reports ready, which takes about 45 s.
+task: beat_block_hammer
+# Where camera frames (.npy) go (absolute); the toolsets of this machine read them from the same
+# directory. Unset, it is RS_BLOB_DIR, which a stack sets for all its services
+# (roboscript.stack: blob_dir); set it only to run the server on its own without RS_BLOB_DIR.
+# blob_dir: /path/to/blobs
+# Our task config: clean (rs_agentic_clean.yml) or randomized (rs_agentic_randomized.yml).
+mode: clean
+# RoboTwin's checkout; leave unset to use ROBOTWIN_ROOT from .env.
+# robotwin_root: /path/to/RoboTwin
+# Where to listen; port 0 picks a free port (the ready file records it).
+server:
+  host: 127.0.0.1
+  control_port: 0
+  agent_port: 0

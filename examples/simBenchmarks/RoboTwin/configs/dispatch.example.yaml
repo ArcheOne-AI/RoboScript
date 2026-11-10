@@ -1,0 +1,69 @@
+# Task-level dispatch of the RoboTwin pipeline over several machines
+# (roboscript.orchestrate.dispatch.DispatchConfig; docs/how-to/dispatch.md). Copy to
+# examples/simBenchmarks/RoboTwin/configs/dispatch.yaml (git-ignored) and start it on the
+# coordinator machine with examples/simBenchmarks/RoboTwin/scripts/dispatch.py. Each worker runs
+# the pipeline (scripts/run_pipeline.py) over its share of the tasks on its GPUs; each finished
+# task's directory moves to <root>/<name>/ here, the one copy. Adding a machine is adding a
+# worker below.
+
+name: my-run                 # <root>/<name>/ here; <run_root>/<name>/<unit>/ on the workers
+root: runs/dispatch
+sha: "abcdef0"                    # the frozen revision: every code copy must be at it, clean
+
+pipeline: configs/pipeline.yaml   # the pipeline config every worker runs (its `tasks` are replaced)
+pipeline_set: []                  # dotted overrides, as run_pipeline.py --set
+composer: robotwin_dispatch:compose   # layered over its env binding (PYTHONPATH: the example)
+tasks: [turn_switch, place_shoe, place_empty_cup, stack_blocks_two, lift_pot]
+# costs: {lift_pot: 400}          # expected cost per task; scripts/dispatch.py fills the official
+                                  # step limits (and --costs-from an earlier summary.json)
+policy: balanced                  # static: longest first, lowest cost per GPU
+
+workers:
+  - name: worker-a
+    transport: ssh                # an ssh alias with key login; `local` for this machine
+    host: worker-a
+    code_dir: /path/to/dispatch/code   # at `sha`; uv sync --locked done
+    python: .venv/bin/python
+    gpus: [0]                     # the cards this worker's pipeline may fill
+    run_root: /path/to/dispatch/runs
+    gateway_url: http://127.0.0.1:18790/v1   # its jobs' RS_GATEWAY_URL (None: its own config)
+    set:                          # this machine's values of unit.local_keys
+      root: /path/to/dispatch/runs
+      interpreters:
+        agent: .venv/bin/python
+        sim: /path/to/conda/envs/roboscript-sim/bin/python
+        vision: /path/to/envs/rs-vision/bin/python
+    env:
+      RS_RUNS_ROOT: /path/to/dispatch/runs
+  # - name: second
+  #   host: <alias>
+  #   code_dir: /path/to/code
+  #   gpus: [0, 1, 2, 3]
+  #   run_root: /path/to/runs
+  #   gateway_url: http://<coordinator address>:18790/v1
+  #   set: {interpreters: {...}}
+
+unit:
+  argv: ["{python}", examples/simBenchmarks/RoboTwin/scripts/run_pipeline.py, --resume, "{dir}"]
+  env: {PYTHONPATH: examples/simBenchmarks/RoboTwin}
+  config_file: pipeline.yaml
+  local_keys: [root, interpreters, sim_pythonpath, vision_pythonpath, gpu_claims, shared_stacks,
+               max_runs, max_per_gpu, p3.config]
+  forced: {gpu_cap_gb: 47.0, gpu_margin_gb: 1.5}   # placements stop at 45.5 GB a card
+  terminal: [done, not_passed, not_converged]
+  tombstones: ["*/pipeline.json", "*/P3/randomized/pipeline.json"]
+  strip: [.roboscript/pids.json, worker.json, pids.json]
+  blobs: blobs
+  blob_min_bytes: 65536
+  pinned:
+    - {path: configs/manipulation.yaml}
+    - {path: configs/scene.yaml}
+    - {path: "data/demos/recorded/{task}/package", ship: true}
+  summary_argv: [.venv/bin/python, examples/simBenchmarks/RoboTwin/scripts/run_pipeline.py,
+                 --summary, "{dir}"]
+  stop_grace_s: 300
+
+poll_s: 60
+lost_after_s: 1800
+relaunch_waits_s: [60, 300, 900]
+checkpoint: false                 # true: a second copy of each running task, refreshed as jobs end

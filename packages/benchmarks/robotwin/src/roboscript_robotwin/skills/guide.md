@@ -1,0 +1,6 @@
+- World frame: {{world_axes}}. Lengths are in meters, orientations are quaternions (w, x, y, z), and fields ending in `_deg` are in degrees.
+- Each gripper has two reference points. The ee is the wrist: `move_to_pose` and the motion tools' targets are ee poses. The TCP is the midpoint between the fingertips, {{tcp_offset_m}} m ahead of the ee along the gripper's pointing direction (the TCP's x axis). Observations report both.
+- Gripper values are normalized: 1 is open, 0 is closed.
+- The arms are `left` and `right` in tool calls; a Memory writes `<arm>` for the arm `plan_arms` gives the stage (`<arm of <role>>` for the arm holding a role), never a side. Objects, parts, regions and frames are named by the ids the tools return (`obj_3`, `frame_2`); an object may also be named by its role (`obj` fields take either, and so do specs' targets).
+- Every physical action takes a `rationale`: `stage` (the workflow stage it belongs to, named as in the Memory), `scene` (what you see that matters now), `progress` (where you are and whether the stage's conditions hold) and `plan` (why this action now and what it should achieve).
+- Image overlays: TCP dots (left cyan, right orange); in fixed views a line from the ee to the TCP and the TCP axes (x red, y green, z blue); a table grid labeled in meters once the table is known.

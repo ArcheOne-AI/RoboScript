@@ -1,0 +1,10 @@
+# RoboTwin's vocabulary over the generic RSI lint rules (recipes/rsi/lint.yaml; the second argument
+# of `load_rsi_recipe`, `roboscript.memory.config.overlaid`): its official check and task-code
+# names and its simulator stack. A list here goes before the recipe's.
+everywhere:
+  evaluator:
+    words: [check_success, eval_success, play_once, step_lim, eval_mode]
+global_only:
+  simulator:
+    message: GLOBAL holds experience a real robot could use; name no simulator
+    words: [sapien, robotwin, mplib]

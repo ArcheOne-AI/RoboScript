@@ -1,0 +1,55 @@
+# RoboTwin's pipeline (robotwin_pipeline.PipelineConfig), a worked example of composing
+# roboscript.learning and roboscript.orchestrate: each task's S1 imitate once, then
+# each variant's S2 practice (which freezes) and P3's official evaluation, every job in a worker
+# process of its own, in parallel. This file is the machine's part (its directories,
+# interpreters, GPUs and recovery): copy it to configs/pipeline.yaml (git-ignored), set this
+# machine's interpreters and start it with examples/simBenchmarks/RoboTwin/scripts/run_pipeline.py
+# from the repository root. It is layered over the env binding it names (`binding`, RoboTwin's
+# examples/simBenchmarks/RoboTwin/run/wicl/ by default: tasks, demonstrations, env servers,
+# GPU services, P3, seeds) and the recipe that binding names (recipes/wicl/pipeline.yaml:
+# variants, protocols, brains), then --set; any key may be set here too. The pipeline directory
+# keeps the composed result (pipeline.yaml), which a resume reads alone. It also needs
+# configs/manipulation.yaml, configs/vision.yaml and examples/simBenchmarks/RoboTwin/configs/p3.yaml
+# (copies of their examples), P3 installed in ROBOTWIN_ROOT (roboscript_robotwin.eval.install)
+# and the persistent gateway. Relative paths are relative to the repository root.
+
+root: runs/pipeline            # each launch writes <root>/<stamp>/ (--resume continues one)
+# binding: examples/simBenchmarks/RoboTwin/run/wicl   # the env binding (this is the default)
+
+interpreters:
+  agent: .venv/bin/python                                        # uv venv: the jobs' workers
+  sim: /path/to/conda/envs/roboscript-sim/bin/python    # conda: env servers, motion
+  vision: /path/to/envs/rs-vision/bin/python   # venv: the vision service
+
+# Filled in this order: a job goes on the first GPU with room under the cap, counting the memory
+# in use (nvidia-smi), this pipeline's placements until their processes show them, and what others
+# claim in `gpu_claims`.
+gpus: [0]
+gpu_cap_gb: 46               # no GPU is filled past this (GB = nvidia-smi's MiB / 1000)
+gpu_margin_gb: 1             # kept free under the cap: what simulators grow between readings
+gpu_claims: /dev/shm/gpu_claims   # the file other tenants of the GPUs write their claims to
+                                  # (roboscript.stack.gpus); null: no other tenant. On a tmpfs,
+                                  # because on a busy disk every tenant waits for its lock
+free_gb_per_place: 6.5       # GPU memory a simulator place takes: an S1 or S2 job holds 1,
+                             #   a P3 block 2
+peak_headroom_gb: 0.5        # a task's jobs then reserve what its jobs showed (gpu_peaks.json)
+                             #   + this
+service_gb: {motion: 2.5, vision: 8.5}   # each GPU's services,
+                                         # started when a job first needs the GPU and it has room
+                                         # for both and the job
+# One stack of services per GPU shared by every tenant of the machine running the same service
+# code (roboscript.stack.shared; null: this pipeline's own, in <stamp>/services/): attached to,
+# or started when there is none; its keeper stops it this long after the last tenant left.
+shared_stacks: /dev/shm/gpu_stacks   # a tmpfs too: its lock is taken as often
+shared_linger_s: 60
+pressure_retry_s: 3600       # how long an out-of-memory job or service waits for room, uncounted
+max_per_gpu: 10              # this pipeline's jobs per GPU: a sanity bound, memory decides
+max_runs: 15                 # jobs at once
+
+respawn_waits_s: [60, 300, 900]         # a job infrastructure failed runs again after each
+service_restart_waits_s: [10, 60, 300]  # a GPU's dead service restarts (on its port) after each,
+                                        # then the GPU is out
+service_idle_s: 600          # a GPU's services stop after this long without a job of this pipeline
+watchdog_s: 1800             # a worker with no heartbeat this long is killed and its job respawned
+min_free_gb: 100             # below this on the run disk, no new job starts (status.json alerts)
+status_interval_s: 30        # status.json and status.md

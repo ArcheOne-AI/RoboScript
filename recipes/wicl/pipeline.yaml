@@ -1,0 +1,47 @@
+# The generic part of a wicl pipeline run (docs/concepts/operations.md): the ablation variants,
+# the protocol parameters every job sets and each role's brain. An env binding layers its part over
+# this one, the machine's config (configs/pipeline.yaml) over both, then --set.
+
+# Each variant's S2 parameters over the recipe's (protocols.yaml) and `protocols` below. Every
+# variant starts from its task's one S1, so a variant sets only `practice`.
+# A layer that names `variants` sets them whole, so a machine's file lists every variant it runs
+# (docs/concepts/operations.md lists the ablation variants).
+variants:
+  default: {}
+
+# Every job's protocol parameters (none: the recipe's); a string's {task} is the task.
+protocols: {}
+
+# Every job's learning settings (roboscript.learning.LearningConfig but run_dir and the recipe,
+# which the env binding names): each role's brain (a layer that names a role's brain sets it
+# whole), infrastructure re-runs (waiting 10, 30, then 90 s before each), timeouts.
+learning:
+  brains:
+    # Models are gateway aliases (configs/gateway.example.yaml); `context.windows` gives the
+    # context budget each alias's window.
+    actor:
+      name: responses
+      config:
+        model: brain-default
+        reasoning_effort: high
+        context: {windows: {brain-default: 272000}}
+    reviser:
+      name: responses
+      config:
+        model: reviser
+        reasoning_effort: high
+        parallel_tool_calls: true
+        history: {tool_images: 16}  # reads many frames in one long turn
+        context: {windows: {reviser: 272000}}
+    demo_reader:
+      name: responses
+      config:
+        model: brain-default
+        reasoning_effort: high
+        parallel_tool_calls: true
+        history: {tool_images: 16}  # reads many frames in one long turn
+        context: {windows: {brain-default: 272000}}
+  max_infra_reruns: 3
+  infra_backoff_s: [10, 30, 90]
+  env_timeout_s: 120
+  open_timeout_s: 900

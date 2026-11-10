@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript-vision"
+description = "Perception backends for RoboScript"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+dependencies = ["roboscript"]
+
+[project.urls]
+Homepage = "https://github.com/ArcheOne-AI/RoboScript"
+Repository = "https://github.com/ArcheOne-AI/RoboScript"
+
+[tool.hatch.version]
+path = "src/roboscript_vision/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript_vision"]

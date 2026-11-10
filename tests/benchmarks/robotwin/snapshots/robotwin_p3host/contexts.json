@@ -1,0 +1,20 @@
+{
+  "p3-D-actor_p3__beat_block_hammer": {
+    "tools": "tools/p3-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "0213249ad9a312ec9002cda8e065184058d3ab537c5d72a375b86750b8d10c2a",
+    "context_sha256": "d48f39b0be810fc1281876ae5d6f065744c1b8beff309c3aca39afc77df426d1"
+  },
+  "p3-D-actor_p3__handover_block": {
+    "tools": "tools/p3-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "d01fb1662ea0a62e36d016a637fb3345a2e00c0ba274298aeeab4e65f8097fad",
+    "context_sha256": "80813fd768c78d25c13f1f04dcc07523af817c6096b6d38173cc096823ceafcf"
+  },
+  "p3-D-actor_p3__open_microwave": {
+    "tools": "tools/p3-D-actor.json",
+    "tools_sha256": "530dd40ce8ac29d54cb1e7be0469216b8bd4bf9dc07603c12f8171633a62668d",
+    "instructions_sha256": "f0d56c9d06d066ce976dc4803c3323e00b0e217f4084866264258e29780cd20b",
+    "context_sha256": "136d085ba8b4b69c3ec7f28fc55adbeb4ef59671e97b8af77473a3ef824063a0"
+  }
+}

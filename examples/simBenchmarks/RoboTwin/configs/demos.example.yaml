@@ -1,0 +1,125 @@
+# Demonstrations (roboscript.demos.DemosConfig): keypoint extraction, the offline choice of one
+# demonstration per task, and its re-recording into the package S1 reads (a benchmark's recording
+# script, such as examples/simBenchmarks/RoboTwin/scripts/record_demos.py). Copy to
+# configs/demos.yaml. Every value below is the default except angle_deg_by_category, whose
+# categories are an example (default: none).
+
+keypoints:
+  # Gripper events: the command is closed below this, so a pre-shape at exactly this value while
+  # approaching still counts as open.
+  grip_threshold: 0.5
+  # Combined speed = translation / speed_ref_m + rotation / speed_ref_deg per physics step
+  # (about 1 for a planned leg at full speed); the arm moves while it exceeds `moving`.
+  speed_ref_m: 0.001
+  speed_ref_deg: 0.3
+  moving: 0.05
+  # A speed dip inside motion below valley_ratio of the lower neighbouring peak splits a leg;
+  # one below corner_ratio splits it where the path turns by corner_deg or more, measured over
+  # corner_window_steps on each side. Cuts stay min_leg_steps apart.
+  valley_ratio: 0.2
+  corner_ratio: 0.6
+  corner_deg: 60.0
+  corner_window_steps: 45
+  min_leg_steps: 90
+  # A motion keypoint must move this far or turn this much from the previous keypoint.
+  min_move_m: 0.01
+  min_turn_deg: 8.0
+  # The first move after a grasp that rises this much is a lift.
+  lift_m: 0.02
+  # A keypoint's region for re-recording review: a vertical cylinder of
+  # radius xy_m and half-height z_m; angle_deg bounds the gripper orientation (null: not checked)
+  # unless the task's category sets it below. S1 judges with the referee's own tolerance
+  # (ImitateConfig.referee; recipes/wicl/protocols.yaml).
+  tolerance:
+    xy_m: 0.02
+    z_m: 0.01
+    angle_deg: null
+  # Orientation tolerance (deg) by task category, an example set of classes:
+  # C1 articulated, C2 oriented part, C3 receiver point, C4 relative placement, C5 single object.
+  angle_deg_by_category:
+    C1: 20.0
+    C2: 10.0
+    C3: 20.0
+    C4: 20.0
+    C5: 30.0
+
+selection:
+  # A candidate whose closes per arm differ from the task's usual counts (a re-grasp, a stray
+  # close) ranks below every usual one.
+  signature_penalty: 10.0
+  # Per unit of |ln(value / task median)|: the usual path length and duration are best.
+  path_weight: 1.0
+  duration_weight: 0.5
+  # Per unit of ln(peak jerk / task median) above the median.
+  jerk_weight: 1.0
+  # Per degree of a grasp's approach direction (the gripper's pointing axis) from the usual one.
+  grasp_weight: 0.05
+  # Per unit of |keypoints - median| / median.
+  keypoints_weight: 2.0
+  # How many top candidates the review shows.
+  keep: 3
+  # Review notes: a pick that still costs review_score; other per-arm close counts in at least
+  # variant_share of the episodes; a runner-up within close_margin that closes differently or has
+  # another number of keypoints.
+  review_score: 0.25
+  variant_share: 0.2
+  close_margin: 0.05
+
+recording:
+  # Replay strategies, tried in order until one latches success: s<k> sends every k-th frame of
+  # the recorded joint trajectory (s1 keeps the frames aligned 1:1 with it), rest only where an arm
+  # comes to rest and the gripper changes.
+  strategies: [s1, s8, rest]
+  # Hold actions (the last frame's command) after the trajectory, waiting for the success latch.
+  tail_holds: 4
+  # Expert pre-runs in a row that must pass before a candidate is recorded: S1 opens the demo
+  # seed at every attempt, each open with `prerun_attempts` pre-runs, so a seed whose pre-run
+  # often fails makes S1 unsolvable sooner or later.
+  prerun_checks: 3
+  # Expert pre-runs per episode opened (as S1 opens it: the GPU planner is not deterministic),
+  # and runs of the expert that regenerate the trajectory of a task whose recorded object variant
+  # may not be the one built here.
+  prerun_attempts: 3
+  expert_attempts: 3
+  # The package holds every `every`-th frame plus each keypoint's and the success frame, and at
+  # most `keyframes` keyframes (head and the moving arm's wrist, gripper events first), drawn as
+  # the sensing toolset draws its views (its SensingConfig).
+  every: 5
+  keyframes: 24
+  # Frame rate of the review video.
+  video_fps: 15
+  # Replay validation (the expert's traced calls through our executor, judged by the keypoints):
+  # attempts before a candidate counts as failed and the next one is recorded; the motion
+  # planner is stochastic.
+  validation_attempts: 3
+  # The keypoint referee's path through the executed steps, as S1's (ImitateConfig): FK every
+  # path_step_rad of joint motion, at most path_step_m of TCP travel apart.
+  path_step_rad: 0.01
+  path_step_m: 0.005
+
+# Review flags on a re-recording's keypoints, against the replayed trajectory's keypoints from its
+# measured poses (the robot's, as the executor measures them; those from its commanded joints are
+# shown for information, because a grasp stops above its commanded target, where the fingers meet
+# the object). Flags mark outliers, not normal demonstrations. Counts that differ are always
+# flagged.
+compare:
+  # A pair farther apart than this share of the reference keypoint's tolerance.
+  flag_ratio: 1.0
+  # A pair more than this many of the reference's frames early or late.
+  flag_offset_frames: 5
+
+disturbance:
+  # A released object may settle this many physics steps: aloha_agilex's fingers take about 250 to
+  # open, and what they let go of slides or drops meanwhile. Motion below jitter_m a physics step
+  # (over the steps into a frame) is contact jitter. An object no hand held that rode on a held one
+  # and ended more than payload_m from its start is the task's payload. Lengths in meters.
+  settle_steps: 400
+  jitter_m: 0.0005
+  payload_m: 0.1
+  # A closed gripper holds something when its measured opening is above the embodiment's
+  # Gripper.holding_threshold.
+  # Flags for review: an arm striking objects, objects moved while not held, articulated joints
+  # moved other than the one the task moves.
+  flag_strike_m: 0.01
+  flag_disturbance_m: 0.02
+  flag_side_joint_rad: 0.3

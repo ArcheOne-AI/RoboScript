@@ -1,0 +1,60 @@
+# A served Tool Hub (roboscript.hub.service, docs/concepts/agent-runtime.md): copy to
+# configs/hub-server.yaml and serve it with
+#   python -m roboscript.integrations.hub_server [--config hub-server] [--ready-file PATH]
+# It reads RS_HUB_SECRET from .env (the episode and service tokens and the control plane's bearer
+# use keys derived from it) and, with permits on, RS_GATEWAY_ADMIN_TOKEN (the gateway's admin
+# plane). The ready file lists each plane's URL: hub.control and hub.permits share the control
+# port; mcp is the brains' endpoint.
+host: 127.0.0.1
+control_port: 0             # the runner's HubControl plane and the gateway's permit intake
+mcp_port: 0                 # the MCP endpoint for brains (`<url>/mcp`); null: no endpoint
+
+# The method whose phases decide which role sees which tool (a roboscript.methods name, or
+# package.module:Class); default wicl. The core tests' method shows the mock toolset below.
+method: roboscript.testing.phases:TestMethod
+
+# Toolsets by their name in the roboscript.toolsets entry-point group: in this process with
+# `config`, or on a remote toolset server whose MCP endpoint is `url`
+# (`python -m roboscript.integrations.mcp.serve --toolset <name> --config toolset-server`);
+# `skillsets` (roboscript.skillsets) mounts a benchmark's skillsets on a toolset, e.g.
+# `{name: manipulation, config: {...}, skillsets: [my_benchmark]}`, and a remote one's
+# server names the same (its `skillsets`).
+toolsets:
+  - {name: mock, config: {act_seconds: 2.0}}
+  # - {name: perception, url: http://127.0.0.1:18301/mcp}
+
+# The robot the toolsets are mounted for (a roboscript.embodiments name or a profile's YAML, as a
+# run's embodiment): a toolset's tools that do not fit it are left out and a named skillset that
+# does not fit it refuses the mount, as a run mounts its toolsets; a remote toolset's server names
+# the same. null: no fit check.
+embodiment: null
+
+# Guards added to the built-in pipeline (docs/concepts/agent-runtime.md), by their name in the
+# roboscript.guards entry-point group, with `overrides` of their config; the same items as a
+# run's guard plugins (RunSpec.plugins with group guards), composed the same way. Empty: the
+# built-in pipeline exactly.
+guards: []
+  # - {name: rate_limit, overrides: {max_calls: 60, window_s: 60}}
+
+blobs: null                 # the blob store shared with the toolsets (a directory or http(s) URL);
+                            # null: RS_BLOB_DIR, which a stack sets for its services
+events: logs/hub.jsonl      # the Hub's event log (rs.event/1 lines)
+
+hub:                        # as in hub.example.yaml
+  render: {image_max_side: 1024, max_images: 6, max_text_chars: 4000}
+  env_timeout_s: 300
+
+token_ttl_s: 3600           # episode and service tokens and gateway registrations; an episode's
+                            # wall clock may not exceed it
+
+# Only model-proposed calls run: each episode's session is registered on the gateway's admin
+# plane, which posts a permit for every tool call in each complete answer of the session's
+# models before the client sees the calls. `mode`: strict (tool and arguments must match) or
+# tool_only; an episode may override it (OpenEpisode.permits). null: permits off.
+permits:
+  gateway: http://127.0.0.1:18790
+  mode: strict
+  timeout_s: 10             # per call to the admin plane
+  ttl_s: 600                # a permit not used this long after it arrived lapses
+
+catalog_lock: null          # a catalog.lock the mounted tools and phases must match (roboscript.hub.lock)

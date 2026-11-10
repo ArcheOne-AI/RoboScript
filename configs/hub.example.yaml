@@ -1,0 +1,19 @@
+# Tool Hub (roboscript.hub): rendering and env requests. Copy to configs/hub.yaml to change
+# them; without a file the Hub uses the values shown here. Which tools an episode sees is not
+# configured here: the method's phases decide it by phase, tier and role. Stage rules (e.g.
+# fail-fast while learning, recovery while evaluated) come with the phases; a runner changes them
+# per episode through OpenEpisode.rules.
+
+# How results reach models: text, then images.
+render:
+  image_max_side: 1024      # pixels; larger images are downscaled to this longest side
+  max_images: 6             # per result; later images are left out with a note
+  max_text_chars: 4000      # longer text, error text included, is cut
+# Changes of `render` by role (the fields given replace the ones above); a runner may change
+# them again per episode (OpenEpisode.render). Roles that read long material (demonstration
+# tables, logs) get more text. The roles named here are the default method's (wicl).
+roles:
+  demo_reader: {max_text_chars: 16000}
+  reviser: {max_text_chars: 16000}
+
+env_timeout_s: 300          # seconds per request to an episode's env (agent plane)

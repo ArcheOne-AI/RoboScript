@@ -1,0 +1,102 @@
+# Model gateway (roboscript.gateway): copy to configs/gateway.yaml and edit the copy.
+# Serve it with `python -m roboscript.gateway`; edits take effect on restart.
+# Upstream URLs and keys live in .env.api (RS_GW_EP<n>_URL / RS_GW_EP<n>_KEY), which only the
+# gateway reads. Clients send `Authorization: Bearer <RS_GATEWAY_TOKEN from .env>:<session id>`.
+schema: rs-gateway/v1
+listen: 127.0.0.1:18790
+
+# Each endpoint names the .env.api variables with its base URL (ending in /v1) and key, and the
+# protocols it speaks. The gateway streams every Responses call upstream (a non-streaming client
+# gets the response the stream ends with). stream_only: an endpoint that serves only streamed
+# Responses calls with a list `input`; the gateway sends a string `input` there as its one user
+# message; such endpoints may end their streams with an empty `output`, which the gateway fills
+# in from the streamed items. tool_output_images: false (default
+# true): the endpoint mishandles images inside a tool's output (a Responses function_call_output
+# whose output holds an input_image), e.g. bills them as base64 text; a request carrying such
+# images goes to the other deployments only (400 unsupported_tool_output_images if none is left).
+# `python -m roboscript.gateway.probe --out DIR` measures it per endpoint. `pool: <name>`:
+# endpoints on one upstream account whose concurrency limit counts the calls on all of them;
+# their deployments share one adaptive cap. Make keys a pool only when their failures depend on
+# the calls in flight on the other keys: a shared cap cut by one key's sporadic overload answers
+# throttles all of them.
+endpoints:
+  primary: {url_env: RS_GW_EP1_URL, key_env: RS_GW_EP1_KEY, protocols: [responses, chat]}
+  fallback: {url_env: RS_GW_EP2_URL, key_env: RS_GW_EP2_KEY, protocols: [responses, chat]}
+
+# Logical models (the names callers use) and their deployments: an endpoint plus the name that
+# endpoint knows the model by. An endpoint may serve several models. A deployment's tier is
+# primary (the default) or fallback: fallback deployments serve only when every primary one is
+# full, cooling down or has failed on the request, and each such call is logged as a
+# degradation. max_inflight (default 8): the calls a deployment takes at once; the cap in force
+# adapts between min_inflight (default 1) and it: halved only when at least
+# aimd_cut_failure_share of its attempts in the last aimd_cut_window_s failed (any failure: a 429
+# or the like, a first-byte timeout, a stream that breaks off, a 5xx), counted from
+# aimd_cut_min_calls attempts on; a lone failure only cools the deployment down and counts toward
+# health. +1 after aimd_increase_after answers in a row, and multiplied by aimd_recover_factor
+# after each aimd_recover_s without a cut or an overload refusal.
+# Set caps from measurement (`python -m roboscript.gateway.probe` and the request log). An
+# endpoint that answers 429 from a rate window rather than from concurrency gets a high floor, so
+# that a cut keeps most of its cap; one that queues per key (latency grows with the calls in
+# flight on the key, answers per minute do not) gets a cap near where its throughput stops
+# growing and a floor of about half of it.
+models:
+  example-model:  # a placeholder: name it after your upstream model
+    deployments:
+      # Primary deployments are preferred; fallback ones take the overflow. The caps are
+      # placeholders: set them from measurement.
+      - {endpoint: primary, upstream: example-model, max_inflight: 8, min_inflight: 2}
+      - {endpoint: fallback, upstream: example-model, tier: fallback,
+         max_inflight: 4, min_inflight: 1}
+    # Sent for a caller that names no reasoning effort (Responses reasoning.effort, Chat
+    # reasoning_effort), so that no call leaves without one; a named effort goes unchanged.
+    default_reasoning_effort: medium
+
+# Role names callers may use instead of a model name.
+aliases: {brain-default: example-model, reviser: example-model, grounder: example-model}
+
+# Routing: a call takes a free slot in the best tier that has one, the least loaded deployment
+# first, equally loaded ones in turn (so that light traffic does not fill one account's rate
+# window). A session keeps the deployment that answered it (its encrypted reasoning only works
+# there): when that one is full, the session waits for it up to pin_wait_s, then moves. When
+# every deployment is full, calls queue; when every one cools down, the one ready first is tried
+# (on a tie a primary, then the model's last good one). `policy` names an entry point in the
+# roboscript.gateway_policies group.
+policy: default
+queue_timeout_s: 300        # a call waits this long for a free slot, then gets 503 queue_timeout
+pin_wait_s: 30              # a session waits this long for a slot on its own deployment
+stats_window_s: 300         # GET /admin/stats (bearer RS_GATEWAY_ADMIN_TOKEN): percentiles over
+                            #   this window
+cooldown_s: 30              # a deployment that failed (429 included) is skipped this long;
+retry_after_cap_s: 120      #   Retry-After wins, up to this cap
+aimd_cut: failure_share     # signal: every 429-like answer, timeout or broken stream halves
+aimd_cut_failure_share: 0.334  # this share of failed attempts within aimd_cut_window_s, with at
+aimd_cut_min_calls: 6       #   least this many attempts there, halves an adaptive cap once
+aimd_cut_window_s: 60
+aimd_increase_after: 2      # answers in a row that raise an adaptive cap by one
+aimd_recover_s: 30          # each interval this long without an overload signal multiplies it
+aimd_recover_factor: 2      #   by this, +1 at least (1: +1 per interval; a fallback too)
+health_min_calls: 10        # attempts within stats_window_s before the failure rate counts;
+health_failure_rate: 0.5    #   at or above it the deployment is out of rotation for 2, 4, 8 ...
+health_cooldown_max_s: 600  #   cooldown_s (at most this), then one probe call at a time
+first_byte_timeout_s: 180   # per attempt, until the first byte; once the answer runs, the
+                            #   longest gap allowed
+connect_timeout_s: 30       # DNS, TCP and TLS; a short one lets a network stall fail
+                            #   every endpoint at once
+# Hedging (non-streaming Responses calls only): once an attempt has run the hedge_quantile of
+# the model's recent answered attempts (stats_window_s; at least hedge_min_s), a second one starts
+# on another deployment with a free slot, unless calls queue; the first answer wins, the other is
+# cancelled (`hedge_lost` in the log, not a failure). A hedge moves the session as any move does
+# (encrypted reasoning stripped, re-pinned on its answer). 0.95 hedges about 5% of calls and
+# cuts most of the very slow tail. Omit: none.
+hedge_quantile: 0.95
+hedge_min_s: 60
+max_pins: 10000             # sessions whose deployment is remembered (in memory; oldest go)
+permit_timeout_s: 10        # to post an answer's permits to a Hub and get its ack (sessions a
+                            #   Hub registered on the admin plane, bearer RS_GATEWAY_ADMIN_TOKEN)
+# The request log gets one rs.event/1 line per request (about 13 kB, no secrets), appended on a
+# thread of its own. Keep it and the state file on a fast local disk, because a saturated journal
+# on a busy data volume or a network file system stalls the gateway. `~` is the user's home;
+# relative paths are taken from the working directory.
+state_file: ~/.local/state/roboscript/gateway-state.json  # last good deployment per model
+log_file: ~/.local/state/roboscript/gateway.jsonl         # the request log
+log_max_queued: 10000   # log lines waiting for the disk; more are dropped and counted

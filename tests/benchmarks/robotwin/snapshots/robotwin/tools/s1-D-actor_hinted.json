@@ -1,0 +1,4327 @@
+{
+  "stage": "s1",
+  "tier": "D",
+  "role": "actor",
+  "variant": "actor_hinted",
+  "tools_sha256": "3868c7541a1208bc318a641f7b002fd533dbaabba437690217dc5a776c9f3bef",
+  "tool_hashes": {
+    "observe": "7882ffdc8ecae8d2e9cb50cffdda06252c4716e3dbb8c6b423bdb577c607aef2",
+    "get_image": "ceca50a97e872f70a0d057f59f1c3f3b4d07cf9c55ec0f24e5a9cb3d298990ff",
+    "show_frames": "d640873c015880c0e14f3a45905dc4091160c5efdcc921b2b2530df897beba74",
+    "get_robot_state": "ef491ee7bcc3130373f1c0e2e4fee41718f61ad79deeb658731cb508919f179d",
+    "move_to_pose": "09767f4f503a8d5cccb658b68345a1b5907793e0ebf9acbb2b75b2b94453dea8",
+    "move_by": "9f6bbc90a253195360d7a25c991008dbad03f580b3c30e570009734e837b637d",
+    "open_gripper": "0308fddd7a74481bddf39468dd2a818997e39a61138c2b7be98a10911e549009",
+    "close_gripper": "7c7e57984ad47a2b354b15f09b42fcb66be96dd37b53963eb88cd50a12c0947a",
+    "return_home": "8a4da8682c67b794550201a097876e43bd85053bc75f61dc6441cea219da2f29",
+    "grasp_object": "84edc1d420d91c68ceca53095bad2974d7a19989cf27e3f101738ae1224319b3",
+    "place_object": "28b46c039cc67b2012fddbca4f67ec00469dce7d9e2b91e516210073e83515a2",
+    "rotate_about": "cd456f7bf3809a278495dcb6f4a02fcd775183e80963802865c5a79936402b18",
+    "follow_path": "c1fa1dc9e9881df50006e895d0f1f49966365cd21008810882dc2aaff3a1bcaf",
+    "together": "d7b2fb4703321477b19a87220e06ffa7a0b29db7d8283a583671feee5afcafda",
+    "nudge": "478d2af3a568c8fc8ca5cdf915ce894b2267fd946346632445c927fdafaf9005",
+    "plan_arms": "1a04ad692191c5399e0646efa0858530d56eabf91d828ecf06fa2bb060847d72",
+    "demo_relation": "4832b40c411d7d175f4bd8ba1531cc20d2a6d2dd2af6f5baa61d2104425ddd11",
+    "ground": "f8740af657677b1f4e615a639df2871510f95876f64857f89caf46ca2d6e49c1",
+    "locate_part": "74ce289345cb3edee532c18f08fee1f3c18adb4339c02dae93b48ed834f692ed",
+    "table": "207920de0e755494ef668ddf2841329d2e5497906d34a7c02cff5e919540d4e9",
+    "register": "a55f866b79110b9471f3062a91fc3e972e65fedf3d78fcb65ba79c4a2cd9acc8",
+    "register_part": "4e97ffdf3eb0a0583c1b6a9a2e66bfe104600e9dd248b943c88163a6e02d9374",
+    "orient": "05e25f1fbe70b570516fc219b1e9da7d28515bc355e4240d4c8c75bd50b60c3e",
+    "check": "d87e3a53f574dd402f5d58edbe53c56174d89378c841b7e40b271695c00ecfa2",
+    "check_done": "3c1e06db237e3d2cbeb10b8cdce9ece0c2c5f5c5469ab41bbd967e3dcd892ce4",
+    "finish": "6d7a966aee6d79b4a2db0bbc95089ce27e02020c88c8d0a7387e3a39a22520f7",
+    "scratchpad": "dd850444aeda4953342f6cfb7249ba486000066d0b92707340bc67ce960fc083"
+  },
+  "tools": [
+    {
+      "type": "function",
+      "name": "observe",
+      "description": "Look now: a new frame from the cameras with the robot state. Overlays: TCP dots (left cyan, right orange); in fixed views a line from the ee to the TCP and the TCP axes (x red, y green, z blue); a table grid labeled in meters once the table is known.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cameras to look through; all when null."
+          },
+          "overlay": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Draw the TCPs, their axes and the table grid. Default when null: true."
+          },
+          "frames": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Also draw the registered objects' frames (see show_frames). Default when null: false."
+          }
+        },
+        "required": [
+          "views",
+          "overlay",
+          "frames"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "get_image",
+      "description": "One camera's image from an earlier frame, with overlays: the robot and table grid as in `observe`, and points (world coordinates projected with that frame's calibration, or pixels) and pixel boxes you give, in magenta.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "camera": {
+            "type": "string",
+            "description": "One of the cameras `observe` lists."
+          },
+          "frame": {
+            "type": "string",
+            "description": "A frame taken earlier, e.g. frame_2. An alias such as frame_1."
+          },
+          "overlay": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "robot": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "TCP dots; in fixed views also the ee-TCP lines and TCP axes. Default when null: true."
+                  },
+                  "grid": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The table grid, once the table is known. Default when null: true."
+                  },
+                  "points": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A short label drawn beside it. At most 24 characters. Default when null: \"\"."
+                            },
+                            "world": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "description": "Exactly 3 items."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "World x, y, z in meters, projected with the frame's calibration."
+                            },
+                            "pixel": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "description": "Exactly 2 items."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Pixel u (column), v (row)."
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "world",
+                            "pixel"
+                          ],
+                          "additionalProperties": false,
+                          "description": "A point to mark in the image: exactly one of `world` and `pixel`."
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Points to mark. At most 20 items."
+                  },
+                  "boxes": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A short label drawn above it. At most 24 characters. Default when null: \"\"."
+                            },
+                            "u0": {
+                              "type": "number"
+                            },
+                            "v0": {
+                              "type": "number"
+                            },
+                            "u1": {
+                              "type": "number"
+                            },
+                            "v1": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "u0",
+                            "v0",
+                            "u1",
+                            "v1"
+                          ],
+                          "additionalProperties": false,
+                          "description": "A box in pixels, corners (u0, v0) and (u1, v1)."
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Boxes to draw. At most 20 items."
+                  },
+                  "frames": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The registered objects' and parts' frames (x red, y green, z blue; where the shape leaves x open, the candidate x arrows labeled A, B, ...) and the world's x and y at the robot base. Default when null: false."
+                  }
+                },
+                "required": [
+                  "robot",
+                  "grid",
+                  "points",
+                  "boxes",
+                  "frames"
+                ],
+                "additionalProperties": false,
+                "description": "What to draw on an image."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What to draw; the robot and grid when null."
+          }
+        },
+        "required": [
+          "camera",
+          "frame",
+          "overlay"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "show_frames",
+      "description": "The objects' frames drawn on a camera image, to read which way each one's axes point: x red, y green, z blue from the object's origin (and its registered parts'), labeled with its id; where the shape leaves x open, the candidate x arrows labeled A, B (C, D), A the current one (`orient` picks another); the world's x and y at the robot base.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "objs": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "An alias such as obj_1."
+                },
+                "description": "At most 12 items."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Registered objects; null: all of them."
+          },
+          "camera": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A camera `observe` lists; null: the head camera."
+          },
+          "frame": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as frame_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A frame taken earlier; null: the newest."
+          }
+        },
+        "required": [
+          "objs",
+          "camera",
+          "frame"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "get_robot_state",
+      "description": "The robot now: per arm the measured ee and TCP poses, the joints (measured and commanded), the gripper's opening and command and whether it holds something; the step count and limit.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "move_to_pose",
+      "description": "Move one arm's ee (the wrist frame, not the TCP) to a pose in the world frame along a planned path. The planner keeps the robot clear of itself and, if possible, of the registered objects no arm holds (the receipt notes when it did not); an empty gripper starting low beside one first rises straight up.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "pose": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "The ee pose in the world frame (the wrist, not the TCP): x, y, z in meters, then its orientation qw, qx, qy, qz, a unit quaternion. Exactly 7 items."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "pose"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "move_by",
+      "description": "Move one arm's ee from where it is now along a straight line: by x, y, z meters along the world axes, or with move_axis arm by z meters along the gripper's pointing axis, positive z backing away from where it points (x and y must then be 0). One call moves at most the per-action limits (0.2 m and 90 degrees unless configured otherwise); a longer displacement is shortened to them (reason clamped). A shift may name a Memory number parameter ({name}); see `displacement`.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters along world x (move_axis world). Or the name of the Memory's number parameter ({name}): the call then moves by its value, mirrored across the robot's middle when this scene's arms are the mirror image of the ones the Memory's specs were written for. Default when null: 0.0."
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters along world y (move_axis world). Or the name of the Memory's number parameter ({name}): the call then moves by its value, mirrored across the robot's middle when this scene's arms are the mirror image of the ones the Memory's specs were written for. Default when null: 0.0."
+          },
+          "z": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters along world z; with move_axis arm, meters back along the gripper's pointing axis (positive backs away from where it points). Or the name of the Memory's number parameter ({name}): the call then moves by its value, mirrored across the robot's middle when this scene's arms are the mirror image of the ones the Memory's specs were written for. Default when null: 0.0."
+          },
+          "quat": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "Exactly 4 items."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The ee orientation to end with, qw, qx, qy, qz: absolute, not a rotation relative to the current one. Null keeps the current orientation."
+          },
+          "move_axis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "world",
+                  "arm"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "world: shift by x, y, z; arm: by z only, along the gripper. Default when null: \"world\"."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "x",
+          "y",
+          "z",
+          "quat",
+          "move_axis"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "open_gripper",
+      "description": "Open one arm's gripper to pos (1 fully open).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "pos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The gripper command: 1 fully open, 0 closed. Must be >= 0.0 and <= 1.0. Default when null: 1.0."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "pos"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "close_gripper",
+      "description": "Close one arm's gripper to pos (0 fully closed). Closing on nothing is no failure here (to push with closed fingers, say); the receipt says whether the fingers hold something.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "pos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The gripper command: 1 fully open, 0 closed. Must be >= 0.0 and <= 1.0. Default when null: 0.0."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "pos"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "return_home",
+      "description": "Move one arm's ee back to its pose at the start of the episode along a planned path.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "grasp_object",
+      "description": "Grasp a registered object where a grasp spec says: the spec's candidate grasps on the object (or on its registered part) as it is now, the first one the arm reaches in the preferred orientations; the gripper goes to approach_m back from it, comes straight in to grasp_offset_m back and closes. The receipt names the candidate taken, k of n. The spec's purpose decides what fails: pick, an empty grasp or a lost hold; pull, an empty grasp; press, nothing (the fingers push).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "obj": {
+            "type": "string",
+            "description": "A registered object. An alias such as obj_1."
+          },
+          "grasp": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "part": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$. Default when null: \"whole\"."
+                  },
+                  "approach": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "top",
+                          "side",
+                          "auto"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"auto\"."
+                  },
+                  "anchor": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "top_center",
+                          "side_center",
+                          "center",
+                          "bottom_center",
+                          "apex",
+                          "pose"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"center\"."
+                  },
+                  "x_toward": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The part the frame's x points to, or other_arm: toward the other gripper, or far_end: toward its footprint's far end; null: both ways."
+                  },
+                  "offset_m": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                  },
+                  "offset_frac": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "description": "Must be >= -1.0 and <= 1.0."
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                  },
+                  "closing": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "minor",
+                          "major"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"minor\"."
+                  },
+                  "yaw_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: 0.0."
+                  },
+                  "tilt_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must be >= -75.0 and <= 75.0. Default when null: 0.0."
+                  },
+                  "lean_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must be >= -75.0 and <= 75.0. Default when null: 0.0."
+                  },
+                  "purpose": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "pick",
+                          "pull",
+                          "press"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"pick\"."
+                  },
+                  "reference_q": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Exactly 4 items."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The grasp's orientation (w, x, y, z) in the robot base frame where it was fitted: candidates near it are tried first; null: none."
+                  },
+                  "arm": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "left",
+                          "right"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The arm it was written for; null: either arm as written."
+                  },
+                  "approach_axis": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Exactly 3 items."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "With anchor pose: the direction the gripper moves in onto the object (the TCP's pointing axis), in the whole object's frame; null otherwise."
+                  },
+                  "closing_axis": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Exactly 3 items."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "With anchor pose: the axis the fingers close along, in the whole object's frame; null otherwise."
+                  }
+                },
+                "required": [
+                  "part",
+                  "approach",
+                  "anchor",
+                  "x_toward",
+                  "offset_m",
+                  "offset_frac",
+                  "closing",
+                  "yaw_deg",
+                  "tilt_deg",
+                  "lean_deg",
+                  "purpose",
+                  "reference_q",
+                  "arm",
+                  "approach_axis",
+                  "closing_axis"
+                ],
+                "additionalProperties": false,
+                "description": "Where and how to grasp: a part of the object, the approach (from above, from the side or\nboth), an anchor on the part, an offset from it in the part frame (z up, x along the long\naxis toward `x_toward`): `offset_m` in meters plus `offset_frac`, fractions of the part's\nextents along its axes, so that one spec lands on the same place of a larger or smaller\npart (a rocker's lower half, a handle's middle), the closing axis, a yaw about the\napproach, a tilt of the approach about the closing axis (positive tilts it toward the\nclosing axis crossed with the approach's reverse, e.g. +y for a top grasp closing along x)\nand a lean of the approach and the closing axis together about the axis across both\n(positive leans the approach toward the closing axis's reverse, e.g. -x for that grasp).\nThe `apex` anchor is the part's most prominent point toward the approaching gripper (the\nmiddle of its surface points within `APEX_BAND_M` of the foremost: a rocker's pressed-out\nedge, a button's top), found on each part anew; from it the offset across the approach is\ntaken as usual, and the one along it from the surface the approach then meets (its points\nwithin `RAY_RADIUS_M` of the approach line), so that fingers go as deep into any part.\n`purpose` says what the hold is for, and so which receipt checks count as a hard failure: `pick`\n(an empty grasp or a lost hold), `pull` (an empty grasp; a pull may slip off at its end) or\n`press` (none: closed fingers push, so the closing axis is only a preference). The `pose`\nanchor writes the grasp as the TCP's pose in the whole object's frame (its box, x toward\n`x_toward` where that names something, else either way the box allows), as the\ndemonstration's grasp was: `offset_m` the TCP's position from the box's center,\n`approach_axis` the direction the gripper moves in onto the object (the TCP's pointing\naxis) and `closing_axis` the one its fingers close along, both in that frame; no part,\nfraction, closing extent, yaw, tilt or lean applies, so a part re-registered on the next\nscene cannot move it. `arm` is the\narm it was written for; the other arm uses its mirror image (`synthesis.mirror`); null\nserves either arm as written. `reference_q`: the grasp's orientation in the robot base frame\nwhere it was fitted, used only to order candidates: where the object's\nframe leaves several (its turns), those within `api.FACING_DEG` of it are tried first; it\nnever moves a grasp, removes a candidate or overrides plannability."
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              }
+            ],
+            "description": "Where and how to grasp: a grasp spec, or the name of the Memory's grasp_spec parameter ({name}): the call then runs it with all its stored fields (axes and orientation hints included), mirrored when another arm acts."
+          },
+          "approach_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters back along the approach from the grasp point where it starts. Must be >= 0.0 and <= 0.3. Default when null: 0.1."
+          },
+          "grasp_offset_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters back along the approach from the grasp point where it closes. Must be >= 0.0 and <= 0.3. Default when null: 0.0."
+          },
+          "gripper_pos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The gripper command: 1 fully open, 0 closed. Must be >= 0.0 and <= 1.0. Default when null: 0.0."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "obj",
+          "grasp",
+          "approach_m",
+          "grasp_offset_m",
+          "gripper_pos"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "place_object",
+      "description": "Place the object the arm holds where a place spec says: its placement point at the spec's target (a registered object or one of its parts, found by the role the spec names; a landmark of the table; or the robot base), the held object being where the arm's grasp holds it. The gripper goes to approach_m back from the placement, moves straight to stop_back_m back (a negative stop_back_m: past the placement, pushing the object on) and opens, unless is_open is false. A region, or an object that lands upright and looks the same turned, is searched for the first placement the arm reaches; the receipt names it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "obj": {
+            "type": "string",
+            "description": "The registered object the arm holds. An alias such as obj_1."
+          },
+          "place": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "object",
+                          "landmark",
+                          "robot_frame"
+                        ]
+                      },
+                      "obj": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "An object role from OBJECTS (or the object's alias)."
+                      },
+                      "part": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A part of the object; null: whole."
+                      },
+                      "anchor": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Must match the pattern ^(top_center|inside_bottom|center|edge:(front|back|left|right))$."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "landmark": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "table_center",
+                              "front_edge_mid",
+                              "robot_midline"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "obj",
+                      "part",
+                      "anchor",
+                      "landmark"
+                    ],
+                    "additionalProperties": false,
+                    "description": "What to place at: an anchor on an object (or one of its parts), a table landmark, or the\nrobot base frame (a constant point: the base origin, the offset in the base axes)."
+                  },
+                  "frame": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "target",
+                          "world_axes"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"target\"."
+                  },
+                  "offset_m": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                  },
+                  "orient": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must match the pattern ^(keep|upright|yaw|relative)$. Default when null: \"keep\"."
+                  },
+                  "yaw_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: 0.0."
+                  },
+                  "rpy_deg": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                  },
+                  "placement_point": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must match the pattern ^(bottom|top|center|part:[a-z][a-z0-9_]*)$. Default when null: \"bottom\"."
+                  },
+                  "placement_point_at": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "description": "Must be >= -1.0 and <= 1.0."
+                        },
+                        "description": "Exactly 3 items."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "x_toward": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The held object's part its frame's x points to (or far_end: its footprint's far end; low_end or high_end: the end of its long side whose top is lower or higher, a front told by height alone), for the orientation; null: its frame as measured."
+                  },
+                  "approach": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Exactly 3 items."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The direction (target frame) the held object moves in onto the placement; null: as the call's approach_axis says."
+                  },
+                  "free_turn_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "How far (deg) the placement may turn either way about its approach to be within reach; 0: as written. Must be >= 0.0 and <= 180.0. Default when null: 0.0."
+                  },
+                  "region_m": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Must be >= 0.0 and <= 0.15. Default when null: 0.0."
+                  },
+                  "receiver": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "part": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$. Default when null: \"whole\"."
+                          },
+                          "approach": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "top",
+                                  "side",
+                                  "auto"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Default when null: \"auto\"."
+                          },
+                          "anchor": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "top_center",
+                                  "side_center",
+                                  "center",
+                                  "bottom_center",
+                                  "apex",
+                                  "pose"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Default when null: \"center\"."
+                          },
+                          "x_toward": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The part the frame's x points to, or other_arm: toward the other gripper, or far_end: toward its footprint's far end; null: both ways."
+                          },
+                          "offset_m": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                          },
+                          "offset_frac": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "number",
+                                  "description": "Must be >= -1.0 and <= 1.0."
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                          },
+                          "closing": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "minor",
+                                  "major"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Default when null: \"minor\"."
+                          },
+                          "yaw_deg": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Default when null: 0.0."
+                          },
+                          "tilt_deg": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Must be >= -75.0 and <= 75.0. Default when null: 0.0."
+                          },
+                          "lean_deg": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Must be >= -75.0 and <= 75.0. Default when null: 0.0."
+                          },
+                          "purpose": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "pick",
+                                  "pull",
+                                  "press"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Default when null: \"pick\"."
+                          },
+                          "reference_q": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                },
+                                "description": "Exactly 4 items."
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The grasp's orientation (w, x, y, z) in the robot base frame where it was fitted: candidates near it are tried first; null: none."
+                          },
+                          "arm": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "left",
+                                  "right"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The arm it was written for; null: either arm as written."
+                          },
+                          "approach_axis": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                },
+                                "description": "Exactly 3 items."
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "With anchor pose: the direction the gripper moves in onto the object (the TCP's pointing axis), in the whole object's frame; null otherwise."
+                          },
+                          "closing_axis": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                },
+                                "description": "Exactly 3 items."
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "With anchor pose: the axis the fingers close along, in the whole object's frame; null otherwise."
+                          }
+                        },
+                        "required": [
+                          "part",
+                          "approach",
+                          "anchor",
+                          "x_toward",
+                          "offset_m",
+                          "offset_frac",
+                          "closing",
+                          "yaw_deg",
+                          "tilt_deg",
+                          "lean_deg",
+                          "purpose",
+                          "reference_q",
+                          "arm",
+                          "approach_axis",
+                          "closing_axis"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Where and how to grasp: a part of the object, the approach (from above, from the side or\nboth), an anchor on the part, an offset from it in the part frame (z up, x along the long\naxis toward `x_toward`): `offset_m` in meters plus `offset_frac`, fractions of the part's\nextents along its axes, so that one spec lands on the same place of a larger or smaller\npart (a rocker's lower half, a handle's middle), the closing axis, a yaw about the\napproach, a tilt of the approach about the closing axis (positive tilts it toward the\nclosing axis crossed with the approach's reverse, e.g. +y for a top grasp closing along x)\nand a lean of the approach and the closing axis together about the axis across both\n(positive leans the approach toward the closing axis's reverse, e.g. -x for that grasp).\nThe `apex` anchor is the part's most prominent point toward the approaching gripper (the\nmiddle of its surface points within `APEX_BAND_M` of the foremost: a rocker's pressed-out\nedge, a button's top), found on each part anew; from it the offset across the approach is\ntaken as usual, and the one along it from the surface the approach then meets (its points\nwithin `RAY_RADIUS_M` of the approach line), so that fingers go as deep into any part.\n`purpose` says what the hold is for, and so which receipt checks count as a hard failure: `pick`\n(an empty grasp or a lost hold), `pull` (an empty grasp; a pull may slip off at its end) or\n`press` (none: closed fingers push, so the closing axis is only a preference). The `pose`\nanchor writes the grasp as the TCP's pose in the whole object's frame (its box, x toward\n`x_toward` where that names something, else either way the box allows), as the\ndemonstration's grasp was: `offset_m` the TCP's position from the box's center,\n`approach_axis` the direction the gripper moves in onto the object (the TCP's pointing\naxis) and `closing_axis` the one its fingers close along, both in that frame; no part,\nfraction, closing extent, yaw, tilt or lean applies, so a part re-registered on the next\nscene cannot move it. `arm` is the\narm it was written for; the other arm uses its mirror image (`synthesis.mirror`); null\nserves either arm as written. `reference_q`: the grasp's orientation in the robot base frame\nwhere it was fitted, used only to order candidates: where the object's\nframe leaves several (its turns), those within `api.FACING_DEG` of it are tried first; it\nnever moves a grasp, removes a candidate or overrides plannability."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The grasp the other arm takes the object with where it is placed: only options where that arm reaches it clear of this gripper count; null: none."
+                  },
+                  "arm": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "left",
+                          "right"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The arm it was written for (the demonstration's arm where it was fitted); null: either arm as written (a tilted placement onto an object at its mirror image when as written is out of reach)."
+                  },
+                  "mirror": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The other arm places at the mirror image (true) or as written (false; the mirror image only when as written is out of its reach). Default when null: false."
+                  }
+                },
+                "required": [
+                  "target",
+                  "frame",
+                  "offset_m",
+                  "orient",
+                  "yaw_deg",
+                  "rpy_deg",
+                  "placement_point",
+                  "placement_point_at",
+                  "x_toward",
+                  "approach",
+                  "free_turn_deg",
+                  "region_m",
+                  "receiver",
+                  "arm",
+                  "mirror"
+                ],
+                "additionalProperties": false,
+                "description": "Where and how to place: the target, the axes the offset is in (the target's or the\nworld's, anchored at the target), the offset, the held object's orientation (`keep` its\ncurrent one, `upright` keeping its yaw, `yaw` = `yaw_deg` from the frame's x, `relative` =\n`rpy_deg` (roll, pitch, yaw about the frame's fixed x, y, z) from the frame, for tilted\nplacements) and its placement point (`bottom`, `top`, `center`, `part:<name>`: a part of\nthat name or kind, at `placement_point_at` fractions of its extent from its pivot, its root end\nalong a known x and its bottom, else at its bottom face center). The\nplacement turns the object about its placement point's z only with `constrain:\nalign`; else it keeps the object's yaw, so `yaw` and `upright` need `align`. `region_m` > 0\nmakes the target a horizontal disk of that radius (drops, piles): its center first, then\nrings, the first plannable point wins. `arm` is the arm it was written for; with `mirror`\nthe other arm places at its mirror image, else as written, or at the mirror image when no\noption as written is within its reach (a tilted spec onto an object with no `arm` too: it\nwas still measured at one arm's wrist). `x_toward` names the held object's part its frame's\nx points to (`ObjectProxy.facing`: a handle), what `relative` and the placement's object axis\nare written in; null: its frame as measured. `approach` directs the\nplacement: the direction (target frame) the held object moves in onto it, the last `approach_m`\n(onto a pin, into a slot), and `free_turn_deg` lets it turn up to that far either way about\nthe approach (else about the vertical) through the placement point, nearest first, the\nfirst option within reach winning (an object hung by a loop or set into a hollow)."
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              }
+            ],
+            "description": "Where and how to place: a place spec, or the name of the Memory's place_spec parameter ({name}): the call then runs it with all its stored fields (axes and orientation hints included), mirrored when another arm acts."
+          },
+          "approach_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters back from the placement where the last straight move starts. Must be >= 0.0 and <= 0.3. Default when null: 0.1."
+          },
+          "stop_back_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters back from the placement where the arm stops and opens; negative: past it, down to -0.06, pushing the object on along the approach. Must be >= -0.06 and <= 0.3. Default when null: 0.02."
+          },
+          "is_open": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Open the gripper at the end. Default when null: true."
+          },
+          "constrain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "align",
+                  "auto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How the held object turns into the placement: free turns its placement point's z onto the target's; align also turns it about that axis until object_axis lies along align_axis; auto aligns by the gripper's own pose (the default). Default when null: \"auto\"."
+          },
+          "align_axis": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "description": "Exactly 3 items."
+                },
+                "description": "At least 1 items."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "align: world directions object_axis may align with (the nearest); null: the target's x, which a stored placement is written against (leave it null unless the workflow's call names it)."
+          },
+          "object_axis": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "align: the axis to align, in the held object's frame or the world. Exactly 3 items. Default when null: [1.0, 0.0, 0.0]."
+          },
+          "object_axis_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object",
+                  "world"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The frame object_axis is given in. Default when null: \"object\"."
+          },
+          "approach_axis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grasp",
+                  "target_z"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "Exactly 3 items."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The direction of the last move: grasp, from the gripper toward the object; target_z, along the target pose's z (down onto an upright placement); or a vector in the target pose's frame. Default when null: \"grasp\"."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "obj",
+          "place",
+          "approach_m",
+          "stop_back_m",
+          "is_open",
+          "constrain",
+          "align_axis",
+          "object_axis",
+          "object_axis_type",
+          "approach_axis"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "rotate_about",
+      "description": "Turn the gripper, and what it holds, by angle_deg about a hinge of a registered object: a line on the box of one of its registered parts (a lid, a door) as the part was measured, in straight moves along the arc from where the gripper is now, positive angle_deg the way the hinge spec says. The part is measured again first; the hinge's side, height and offset are the given ones (the receipt notes where vision estimated it).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "obj": {
+            "type": "string",
+            "description": "A registered object. An alias such as obj_1."
+          },
+          "hinge": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "part": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The part that turns; whole: the object's box. Must match the pattern ^[a-z][a-z0-9_]{0,39}$. Default when null: \"whole\"."
+                  },
+                  "side": {
+                    "type": "string",
+                    "enum": [
+                      "front",
+                      "back",
+                      "left",
+                      "right"
+                    ]
+                  },
+                  "at": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "bottom",
+                          "middle",
+                          "top",
+                          "upright"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Default when null: \"bottom\"."
+                  },
+                  "offset_m": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Exactly 3 items. Default when null: [0.0, 0.0, 0.0]."
+                  }
+                },
+                "required": [
+                  "part",
+                  "side",
+                  "at",
+                  "offset_m"
+                ],
+                "additionalProperties": false,
+                "description": "Where a part turns: a line on one side of the part's upright box (`front`: the face\ntoward the robot, `back`: away from it, `left` and `right` as the robot sees them; the face\nwhose outward normal is nearest that direction), horizontal along that side at its bottom,\nmiddle or top, or upright through its middle, moved by `offset_m` (meters: across the side\n(up x its outward normal), out of it, up). A turn about it is right-handed about its\ndirection: up x the side's outward normal for a horizontal line, so positive angles lift the\npart's far side; up for an upright one, so positive angles turn counterclockwise seen from\nabove."
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              }
+            ],
+            "description": "The hinge: a hinge spec, or the name of the Memory's hinge_spec parameter ({name}): the call then runs it with all its stored fields (axes and orientation hints included), mirrored when another arm acts."
+          },
+          "angle_deg": {
+            "type": "number",
+            "description": "Degrees about the hinge, right-handed about it. Must be >= -180.0 and <= 180.0."
+          },
+          "steps": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "description": "Must be > 0 and <= 36."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Straight moves along the arc; null: one per 10 degrees."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "obj",
+          "hinge",
+          "angle_deg",
+          "steps"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "follow_path",
+      "description": "Carry what the arm holds (an object, or a part such as a lid, a door or a drawer) along a held path fitted on the demonstration, keeping the hold: what is held makes the demonstration's motion relative to its body (its whole object as measured now), each gripper from where it holds it; with both, two arms holding one object move together, neither retreating along its grasp. An arc about a hinge needs no hinge here. The receipt says how many of the path's waypoints were reached, how far each arm was from each, and whether, and where, a hold was lost.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "both"
+            ],
+            "description": "The arm holding what moves, or both: two arms holding one object."
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "poses": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "description": "Exactly 7 items."
+                    },
+                    "description": "The TCP's poses (x, y, z, qw, qx, qy, qz) in the held object's body frame, the first at the close. At least 2 items. At most 32 items."
+                  },
+                  "x_toward": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The end of the held object its body frame's x points to, where only height tells it (low_end or high_end); null: the object's front as its part or footprint decides it (as fitted)."
+                  },
+                  "arm": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "left",
+                          "right"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The arm it was fitted at (the other arm follows its mirror image); null: either arm as written (its mirror image when as written is out of reach)."
+                  }
+                },
+                "required": [
+                  "poses",
+                  "x_toward",
+                  "arm"
+                ],
+                "additionalProperties": false,
+                "description": "A held path (`manipulation.paths`): what a gripper holding an object or a part did with it,\nas the TCP's poses (x, y, z in meters, then qw, qx, qy, qz) in the body frame of what it\nholds, the first where the gripper closed. The body frame is the whole object's (its box, as\na pose grasp's: x toward its front where its geometry decides one, `x_toward` where only\nheight tells it), also where the arm holds\none of its articulated parts (the part moves; the body it turns on does not). What the path\nreproduces is the motion: `follow_path` moves what the arms hold by the same rigid motion\nrelative to that frame, each gripper from where it holds (so a grasp a few millimeters off\nis carried along), and a door's or a lid's arc needs no hinge. `arm` names the arm it was\nfitted at: the other arm follows its mirror image (reflected through the body frame across\nthe vertical plane nearest the robot's sagittal one, as a grasp is); both arms holding one\nobject follow it as written; one naming no arm is followed as written, else, when that is\nout of reach from the start, at its mirror image."
+              },
+              {
+                "type": "string",
+                "description": "Must match the pattern ^\\{?[a-z][a-z0-9_]{0,39}\\}?$."
+              }
+            ],
+            "description": "The held path: a path spec, or the name of the Memory's path_spec parameter ({name}), as fitted on the demonstration."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "together",
+      "description": "Run one action of each arm at once, in the same steps: one action and one receipt. It is refused, and nothing moves, if the TCPs would come closer than the configured gap (3 cm unless configured otherwise), unless they start closer and come at most 5 mm closer (leaving a shared hold).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "arm": {
+                  "type": "string",
+                  "enum": [
+                    "left",
+                    "right"
+                  ]
+                },
+                "action": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "move_to_pose"
+                          ]
+                        },
+                        "pose": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "pose"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "move_by"
+                          ]
+                        },
+                        "x": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "y": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "z": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "quat": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "move_axis": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "world",
+                                "arm"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "x",
+                        "y",
+                        "z",
+                        "quat",
+                        "move_axis"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "open_gripper"
+                          ]
+                        },
+                        "pos": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "pos"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "close_gripper"
+                          ]
+                        },
+                        "pos": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "pos"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "return_home"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "grasp_object"
+                          ]
+                        },
+                        "obj": {
+                          "type": "string"
+                        },
+                        "grasp": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "part": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "approach": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "top",
+                                        "side",
+                                        "auto"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "anchor": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "top_center",
+                                        "side_center",
+                                        "center",
+                                        "bottom_center",
+                                        "apex",
+                                        "pose"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "x_toward": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "offset_m": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "offset_frac": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "closing": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "minor",
+                                        "major"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "yaw_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "tilt_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "lean_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "purpose": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "pick",
+                                        "pull",
+                                        "press"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "reference_q": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "arm": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "left",
+                                        "right"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "approach_axis": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "closing_axis": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "part",
+                                "approach",
+                                "anchor",
+                                "x_toward",
+                                "offset_m",
+                                "offset_frac",
+                                "closing",
+                                "yaw_deg",
+                                "tilt_deg",
+                                "lean_deg",
+                                "purpose",
+                                "reference_q",
+                                "arm",
+                                "approach_axis",
+                                "closing_axis"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "approach_m": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "grasp_offset_m": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "gripper_pos": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "obj",
+                        "grasp",
+                        "approach_m",
+                        "grasp_offset_m",
+                        "gripper_pos"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "place_object"
+                          ]
+                        },
+                        "obj": {
+                          "type": "string"
+                        },
+                        "place": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "target": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "object",
+                                        "landmark",
+                                        "robot_frame"
+                                      ]
+                                    },
+                                    "obj": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "part": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "anchor": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "landmark": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "table_center",
+                                            "front_edge_mid",
+                                            "robot_midline"
+                                          ]
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "obj",
+                                    "part",
+                                    "anchor",
+                                    "landmark"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "frame": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "target",
+                                        "world_axes"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "offset_m": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "orient": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "yaw_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "rpy_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "placement_point": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "placement_point_at": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "x_toward": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "approach": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "free_turn_deg": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "region_m": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "receiver": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "part": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "approach": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "top",
+                                                "side",
+                                                "auto"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "anchor": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "top_center",
+                                                "side_center",
+                                                "center",
+                                                "bottom_center",
+                                                "apex",
+                                                "pose"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "x_toward": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "offset_m": {
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "offset_frac": {
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "closing": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "minor",
+                                                "major"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "yaw_deg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "tilt_deg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "lean_deg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "purpose": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "pick",
+                                                "pull",
+                                                "press"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "reference_q": {
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "arm": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "left",
+                                                "right"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "approach_axis": {
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "closing_axis": {
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "part",
+                                        "approach",
+                                        "anchor",
+                                        "x_toward",
+                                        "offset_m",
+                                        "offset_frac",
+                                        "closing",
+                                        "yaw_deg",
+                                        "tilt_deg",
+                                        "lean_deg",
+                                        "purpose",
+                                        "reference_q",
+                                        "arm",
+                                        "approach_axis",
+                                        "closing_axis"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "arm": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "left",
+                                        "right"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "mirror": {
+                                  "anyOf": [
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "target",
+                                "frame",
+                                "offset_m",
+                                "orient",
+                                "yaw_deg",
+                                "rpy_deg",
+                                "placement_point",
+                                "placement_point_at",
+                                "x_toward",
+                                "approach",
+                                "free_turn_deg",
+                                "region_m",
+                                "receiver",
+                                "arm",
+                                "mirror"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "approach_m": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "stop_back_m": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "is_open": {
+                          "anyOf": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "constrain": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "free",
+                                "align",
+                                "auto"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "align_axis": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "object_axis": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "object_axis_type": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "object",
+                                "world"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "approach_axis": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "grasp",
+                                "target_z"
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "obj",
+                        "place",
+                        "approach_m",
+                        "stop_back_m",
+                        "is_open",
+                        "constrain",
+                        "align_axis",
+                        "object_axis",
+                        "object_axis_type",
+                        "approach_axis"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "rotate_about"
+                          ]
+                        },
+                        "obj": {
+                          "type": "string"
+                        },
+                        "hinge": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "part": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "side": {
+                                  "type": "string",
+                                  "enum": [
+                                    "front",
+                                    "back",
+                                    "left",
+                                    "right"
+                                  ]
+                                },
+                                "at": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "bottom",
+                                        "middle",
+                                        "top",
+                                        "upright"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "offset_m": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "part",
+                                "side",
+                                "at",
+                                "offset_m"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "angle_deg": {
+                          "type": "number"
+                        },
+                        "steps": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "obj",
+                        "hinge",
+                        "angle_deg",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "arm",
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Each arm's action, one per arm: {arm, action}, the arm as plan_arms gives it for the role it acts on. `action` names the action tool; its other fields mean what that tool's do (no rationale). Exactly 2 items."
+          }
+        },
+        "required": [
+          "rationale",
+          "moves"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "nudge",
+      "description": "Correct where an object the arm holds ends, as check_done's corrections say: lift it by lift, move its center by x, y along the world axes while turning it by turn_deg about the vertical through its center, then (release) lower it by lift, open the gripper and back the gripper 5 cm straight up. A small correction of an object that is nearly where it should be, instead of a new placement; grasp it first if no arm holds it. Stops at the first part that fails, whose receipt it returns.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "arm": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "description": "The arm: left or right."
+          },
+          "obj": {
+            "type": "string",
+            "description": "The registered object the arm holds. An alias such as obj_1."
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters along world x. Must be >= -0.1 and <= 0.1. Default when null: 0.0."
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters along world y. Must be >= -0.1 and <= 0.1. Default when null: 0.0."
+          },
+          "turn_deg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Degrees about the vertical through the object's center, counterclockwise seen from above. Must be >= -180.0 and <= 180.0. Default when null: 0.0."
+          },
+          "lift": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Meters to lift it before moving. Must be >= 0.0 and <= 0.1. Default when null: 0.01."
+          },
+          "release": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lower it back, open the gripper and back off 5 cm up. Default when null: true."
+          }
+        },
+        "required": [
+          "rationale",
+          "arm",
+          "obj",
+          "x",
+          "y",
+          "turn_deg",
+          "lift",
+          "release"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "plan_arms",
+      "description": "Which arm does which stage of the Memory's workflow in this scene, planned once for the whole episode: each hold (a grasp of a role until its release) gets an arm; holds open at the same time get different arms, a hand-over's receiving hold the arm that does not hold the object, an arm the instruction names the hold it names. Each hold's arm is checked by planning its grasp, carry and placement as the calls would (nothing moves); on the demonstration's scene it is the demonstration's. Call it after the objects are identified and before the first action, and again after a hard failure when the scene has changed. With `assign` the plan takes your arms (never against the instruction's) and says what that breaks.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rationale": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "description": "The workflow stage this action belongs to, named as in the Memory. At most 40 characters."
+              },
+              "scene": {
+                "type": "string",
+                "description": "What you see that matters for this action."
+              },
+              "progress": {
+                "type": "string",
+                "description": "Where you are in the workflow and whether its conditions hold."
+              },
+              "plan": {
+                "type": "string",
+                "description": "Why this action now and what it should achieve."
+              }
+            },
+            "required": [
+              "stage",
+              "scene",
+              "progress",
+              "plan"
+            ],
+            "additionalProperties": false,
+            "description": "Why this physical action."
+          },
+          "assign": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stage": {
+                      "type": "string",
+                      "description": "A workflow stage's name. At least 1 characters."
+                    },
+                    "arm": {
+                      "type": "string",
+                      "enum": [
+                        "left",
+                        "right"
+                      ],
+                      "description": "The arm: left or right."
+                    }
+                  },
+                  "required": [
+                    "stage",
+                    "arm"
+                  ],
+                  "additionalProperties": false,
+                  "description": "An arm the Agent gives a stage in `plan_arms`."
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Your own choice for the stages you assign otherwise than the plan (each stage's arm; the rationale says why). Null: take the plan."
+          }
+        },
+        "required": [
+          "rationale",
+          "assign"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "demo_relation",
+      "description": "Relate the demonstration's gripper at a keypoint to a registered object or part, as the spec that reproduces it. Where the arm holds an articulated part at the keypoint, the hinge spec on that part's box and the angle the gripper turned since its close; where it holds an object (the recorded grasps carry it there), the place specs of that object at obj (from obj's anchor nearest its point, in obj's axes and the world's), or at the robot base with no obj; in both, the held path from the close to the keypoint (to the last before a placement's own move): a path spec for follow_path, which carries what the arm (or both arms) holds the way the demonstration did, arcs included; elsewhere the grasp spec of obj (a hand-over's receiving grasp where the other arm holds it; press where the close holds nothing). A release of what the other arm already holds is a hand-over, said with the order to write it in. Each says what it does not reproduce. At a retreat (the gripper leaving what it released), the move it made, which the workflow repeats before the other arm works near there. The demonstration started from this scene: its objects start where this episode first measured them.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "keypoint": {
+            "type": "string",
+            "description": "A keypoint: its arm and number, e.g. left K2. Must match the pattern ^(left|right) K[1-9][0-9]*$."
+          },
+          "obj": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as obj_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "At a grasp, the object grasped; at a placement, the target object (null: the robot base)."
+          },
+          "part": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Must match the pattern ^[a-z][a-z0-9_]{0,39}$."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A registered part of obj to relate to; null: the whole object."
+          },
+          "placement_point": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "At a placement, the held object's point that is placed: bottom, top, center or part:<name>. Must match the pattern ^(bottom|top|center|part:[a-z][a-z0-9_]*)$. Default when null: \"bottom\"."
+          }
+        },
+        "required": [
+          "keypoint",
+          "obj",
+          "part",
+          "placement_point"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "ground",
+      "description": "Find something in one camera's image. Candidates come as regions to lift, fit or register, with the overlay; detector scores rank and are not confidences. An Actor grounds on the initial frame, or on the newest to find again an object no arm holds (one dropped or never taken; register it with replaces).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to find: its kind, colour, shape or material, in the instruction's words. At least 1 characters. At most 200 characters."
+          },
+          "backend": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "vlm",
+                  "som",
+                  "grounding_dino",
+                  "geometric"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "vlm: the VLM's box; grounding_dino: detector boxes; som: the VLM's choice among numbered proposals; geometric: every proposal, the query unread. Default when null: \"vlm\"."
+          },
+          "camera": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A camera `observe` lists; null: the embodiment's head camera."
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "box",
+                  "point"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "box: boxes; point: points, each on a proposal if any. Default when null: \"box\"."
+          },
+          "frame": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as frame_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The frame to look at; null: the newest (an Actor's: the initial)."
+          }
+        },
+        "required": [
+          "query",
+          "backend",
+          "camera",
+          "mode",
+          "frame"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "locate_part",
+      "description": "Find a part of a registered object and register it. Its candidates come from the object's geometry (see kind); with `kind`, only those of that kind (if none, those of a kind like it: a rocker the geometry reads as a button). The only one of a kind is taken as it is; else the VLM names the one the query describes among them, outlined and numbered in one camera. The part's frame: origin at the center of its box, z up, x from the object's body toward the part where that decides it (else along its long side, toward the part x_toward names, else both ways). A moving part (articulated) the geometry offers no candidate for, or none the VLM names, is boxed by the VLM from the query instead, and a moving part's x points from its hinge toward its free edge where the hinge estimate is confident. With a prior, only the candidates lying where it says are offered, nearest first (the nearest is taken when the VLM names none of several), and where none does, the object's points inside the prior's box make the part. The report gives the candidate's kinds and the part's prior, for the Memory to keep, and the route that found the part (only: the one candidate of its kind; mark: the VLM's choice among the candidates; prior: where the prior says; box: the VLM's box). To give the part's pixels yourself, use register_part with a region. An Actor locates parts on the initial frame only.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "obj": {
+            "type": "string",
+            "description": "The object the part belongs to. An alias such as obj_1."
+          },
+          "part": {
+            "type": "string",
+            "description": "The part's name, as the Memory names it. At least 1 characters. At most 40 characters."
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "At most 200 characters."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How to find it; null: the <part> of the <object>."
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "handle",
+                  "rim",
+                  "rocker",
+                  "button",
+                  "lid",
+                  "neck",
+                  "opening",
+                  "end"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The kind of part candidate it is, as the Memory keeps it: handle (sticks out of the body's side), end or neck (of a long or a narrowing object), rim or opening (of an open vessel), lid, button or rocker (on top, or on a thin upright object's face); null: any."
+          },
+          "x_toward": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A registered part of the object that the part's x points toward (the part's own name counts as null)."
+          },
+          "articulated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The part turns or slides on the object (a lid, a door, a drawer): a grasp of it moves the part, not the object. Default when null: false."
+          },
+          "prior": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "at": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "description": "Must be >= -1.0 and <= 1.0."
+                    },
+                    "description": "Exactly 3 items."
+                  },
+                  "size": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "description": "Must be > 0.0 and <= 2.0."
+                    },
+                    "description": "Exactly 3 items."
+                  }
+                },
+                "required": [
+                  "at",
+                  "size"
+                ],
+                "additionalProperties": false,
+                "description": "A part's place on its object: the center of its points' box (`at`, from the object box's\ncenter; ±0.5 on the box's faces) and that box's extent (`size`), both in fractions of the\nobject's box along its axes (z up, x along its long side)."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the part lies on the object, as a report's prior gave it (the Memory keeps it); null: anywhere."
+          },
+          "camera": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A camera `observe` lists; null: the embodiment's head camera."
+          },
+          "frame": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as frame_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The frame to look at; null: the newest (an Actor's: the initial)."
+          }
+        },
+        "required": [
+          "obj",
+          "part",
+          "query",
+          "kind",
+          "x_toward",
+          "articulated",
+          "prior",
+          "camera",
+          "frame"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "table",
+      "description": "The table: plane height, extent, the edges some view shows and its landmarks (table center, front-edge midpoint, robot midline; estimated where no view shows an edge). It is found once, on the episode's first analyzed frame, and never changes afterwards.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "frame": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as frame_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where to find it if not known yet; null: the newest frame."
+          }
+        },
+        "required": [
+          "frame"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "register",
+      "description": "Register the object a region shows, under a role: its points from every view the region has, fitted. With replaces, that object leaves the registry. Actions and checks take registered objects only. An Actor only corrects an identity: under a role, from a region the initial identification showed for that role, replacing the role's object (none if it has none), before an arm has taken it; or adds, without replaces, another object to a role the identification found several objects for (order: rest).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The object's role, as the Memory's OBJECTS names it (snake_case). At least 1 characters. At most 40 characters."
+          },
+          "region": {
+            "type": "string",
+            "description": "A region from ground, segment, identify. An alias such as region_1."
+          },
+          "shape": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "box",
+                  "cylinder",
+                  "plane",
+                  "line"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "auto: the shape that explains the points best. Default when null: \"auto\"."
+          },
+          "replaces": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as obj_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An object this one replaces (registered under a wrong identity)."
+          }
+        },
+        "required": [
+          "name",
+          "region",
+          "shape",
+          "replaces"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "register_part",
+      "description": "Register a part of an object: the object's points that the region's cameras show inside it, framed by geometry (origin at the center of their box, z up, x along its long side, toward the part x_toward names, else both ways). An Actor registers parts on the initial frame only.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "obj": {
+            "type": "string",
+            "description": "A registered object. An alias such as obj_1."
+          },
+          "part": {
+            "type": "string",
+            "description": "The part's name, as the Memory names it. At least 1 characters. At most 40 characters."
+          },
+          "region": {
+            "type": "string",
+            "description": "Pixels of the part. An alias such as region_1."
+          },
+          "x_toward": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A registered part of the object that the part's x points toward (the part's own name counts as null)."
+          },
+          "articulated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The part turns or slides on the object (a lid, a door, a drawer): a grasp of it moves the part, not the object. Default when null: false."
+          }
+        },
+        "required": [
+          "obj",
+          "part",
+          "region",
+          "x_toward",
+          "articulated"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "orient",
+      "description": "Turn a registered object's frame about its z so that its x is the candidate arrow `x` that show_frames draws, then keep it (its x counts as decided, unless the shape had pointed x the other way: then the other arrows stay candidates). The object stays what and where it is (identity, points, parts in the world, grasps); specs and checks read the new frame. Use it where the shape left x open and the image shows which end the Memory's `x toward:` names.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "obj": {
+            "type": "string",
+            "description": "A registered object. An alias such as obj_1."
+          },
+          "x": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "description": "The candidate x arrow of show_frames to make the object's x: A as it is, B the half turn (for a near-square object the next quarter turn), ..."
+          }
+        },
+        "required": [
+          "obj",
+          "x"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "check",
+      "description": "Check a predicate on the registered objects and the robot: holding, gripper_open, lifted, on, inside, beside, near, pressed (where an empty gripper last pushed on it and was stopped), moved, yaw_aligned. A failing predicate ends nothing; it tells you whether a stage is done.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "predicate": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "holding"
+                    ]
+                  },
+                  "arm": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right"
+                    ],
+                    "description": "The arm."
+                  }
+                },
+                "required": [
+                  "name",
+                  "arm"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "gripper_open"
+                    ]
+                  },
+                  "arm": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right"
+                    ],
+                    "description": "The arm."
+                  },
+                  "fraction": {
+                    "type": "number",
+                    "description": "Share of the full opening, a value from the Memory's parameters. Must be >= 0.0 and <= 1.0."
+                  }
+                },
+                "required": [
+                  "name",
+                  "arm",
+                  "fraction"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "lifted"
+                    ]
+                  },
+                  "obj": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "height": {
+                    "type": "number",
+                    "description": "Meters of its bottom above the table, a value from the Memory's parameters."
+                  }
+                },
+                "required": [
+                  "name",
+                  "obj",
+                  "height"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "on"
+                    ]
+                  },
+                  "a": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "b": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "tol": {
+                    "type": "number",
+                    "description": "Meters of slack between a's bottom and b's top, a value from the Memory's parameters."
+                  },
+                  "min_overlap": {
+                    "type": "number",
+                    "description": "Share of a's footprint over b's, a value from the Memory's parameters. Must be >= 0.0 and <= 1.0."
+                  }
+                },
+                "required": [
+                  "name",
+                  "a",
+                  "b",
+                  "tol",
+                  "min_overlap"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "inside"
+                    ]
+                  },
+                  "a": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "b": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  }
+                },
+                "required": [
+                  "name",
+                  "a",
+                  "b"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "beside"
+                    ]
+                  },
+                  "a": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "b": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right",
+                      "front",
+                      "back",
+                      "arm_side",
+                      "other_side"
+                    ],
+                    "description": "The robot's left, right, front (nearer it) or back; arm_side / other_side: the side of the arm that took a, or of the other arm (a side the acting arm gives, not the task)."
+                  },
+                  "dmin": {
+                    "type": "number",
+                    "description": "Meters, a value from the Memory's parameters."
+                  },
+                  "dmax": {
+                    "type": "number",
+                    "description": "Meters, a value from the Memory's parameters."
+                  }
+                },
+                "required": [
+                  "name",
+                  "a",
+                  "b",
+                  "direction",
+                  "dmin",
+                  "dmax"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "near"
+                    ]
+                  },
+                  "arm": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right"
+                    ],
+                    "description": "The arm."
+                  },
+                  "obj": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "description": "Meters from the TCP to its box, a value from the Memory's parameters."
+                  }
+                },
+                "required": [
+                  "name",
+                  "arm",
+                  "obj",
+                  "distance"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "pressed"
+                    ]
+                  },
+                  "obj": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "description": "Meters from its center to the last press, seen from above, a value from the Memory's parameters."
+                  }
+                },
+                "required": [
+                  "name",
+                  "obj",
+                  "distance"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "moved"
+                    ]
+                  },
+                  "obj": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "description": "Meters, a value from the Memory's parameters."
+                  },
+                  "since": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A step; null: since it was first measured."
+                  }
+                },
+                "required": [
+                  "name",
+                  "obj",
+                  "distance",
+                  "since"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "yaw_aligned"
+                    ]
+                  },
+                  "obj": {
+                    "type": "string",
+                    "description": "A registered object. An alias such as obj_1."
+                  },
+                  "ref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "An alias such as obj_1."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Another object; or give ref_deg."
+                  },
+                  "ref_deg": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A yaw in degrees; or give ref."
+                  },
+                  "tol": {
+                    "type": "number",
+                    "description": "Degrees, a value from the Memory's parameters."
+                  }
+                },
+                "required": [
+                  "name",
+                  "obj",
+                  "ref",
+                  "ref_deg",
+                  "tol"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "The predicate and its arguments, tagged by name."
+          },
+          "frame": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An alias such as frame_1."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "At that frame's robot state; null: now."
+          }
+        },
+        "required": [
+          "predicate",
+          "frame"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "check_done",
+      "description": "Whether the task looks done: each of the Memory's done criteria measured on a new observation (objects an arm let go of measured again there first), with the numbers; a criterion on a role with several objects holds for each of them (the second and later named `<role>#<n>`, in the role's order); a press criterion reads where an empty gripper last pushed on the object and was stopped (as an action's receipt reported it), since a press need not show afterwards. When the demonstration's final state is known, every camera's view (head and wrists) is also compared with it, and the check passes only if that comparison confirms it; when the demonstration pushed something with empty fingers, it also needs such a push of this episode stopped on a registered object. When the demonstration's end is known as targets, each object it moved is also measured against it (how many arms hold it, how high it is lifted, its yaw where it was turned, where it sits relative to the object under or beside it), each gap with the correction that closes it: a small shift of that object, not a new attempt from the start. A lift (an object held up in the air) is held to two heights, both as the demonstration's end had them: its gap over the table and its height over the robot's base (the table may be lower here). An object the demonstration was still carrying when its success latched must end past the demonstration's end along that carry (the line says which way and how far). A long object held at the end with its end on another object (a tool on its target) is held by that end, not by its whole: the end's center where the demonstration had it relative to the target, and no higher above it. finish needs a passing check_done after the last action; move an arm that hides an object out of the way before checking.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "finish",
+      "description": "End the episode, once the task is done or cannot be done; no tool calls are accepted afterwards.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "A sentence or two on how the task ended."
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "scratchpad",
+      "description": "Your notes for this episode only, at most 2000 characters: a note is added as a new line (or replaces them all). Once written, the scratchpad is shown at the start of every turn; it ends with the episode and never reaches the Task Memory.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A note to add; null: only show it."
+          },
+          "replace": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replace the whole scratchpad with the note. Default when null: false."
+          }
+        },
+        "required": [
+          "note",
+          "replace"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  ],
+  "system_tools": [
+    "identify",
+    "read_end_targets",
+    "read_relations"
+  ]
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript-robotwin"
+description = "RoboTwin 2.0 integration for RoboScript"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+dependencies = ["roboscript"]
+
+[project.urls]
+Homepage = "https://github.com/ArcheOne-AI/RoboScript"
+Repository = "https://github.com/ArcheOne-AI/RoboScript"
+
+[project.entry-points."roboscript.benchmarks"]
+robotwin = "roboscript_robotwin.benchmark:ROBOTWIN"
+
+[tool.hatch.version]
+path = "src/roboscript_robotwin/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript_robotwin"]
+
+[project.entry-points."roboscript.embodiments"]
+aloha_agilex = "roboscript_robotwin.benchmark:ROBOTWIN.embodiment"  # the YAML profile's path
+
+[project.entry-points."roboscript.evaluations"]
+robotwin = "roboscript_robotwin.eval.jobs:P3Jobs"
+
+[project.entry-points."roboscript.skillsets"]
+robotwin = "roboscript_robotwin.skills:ROBOTWIN_SKILLS"

@@ -1,0 +1,38 @@
+# The vision service (roboscript_vision.config.VisionConfig): GroundingDINO and SAM 3 on one GPU,
+# in the vision interpreter (packages/vision/README.md). Copy to configs/vision.yaml and run
+#   CUDA_VISIBLE_DEVICES=0 python -m roboscript_vision --config vision
+# It refuses to start unless CUDA_VISIBLE_DEVICES names a GPU, and uses the first one named
+# (8 GiB with both models).
+
+# The blob store directory shared with the callers (absolute): they put images there (RGB .npy,
+# PNG or JPEG) and read the masks the service writes. Unset, it is RS_BLOB_DIR, which a stack
+# sets for all its services (roboscript.stack: blob_dir).
+# blob_dir: /path/to/blobs
+# HF_HOME (absolute): hub weights live in <cache_dir>/hub.
+cache_dir: /path/to/.cache/huggingface
+# HF_ENDPOINT: a hub mirror for downloads (where huggingface.co is not reachable);
+# null keeps the default.
+hf_endpoint: null
+# Load weights only from the cache; false lets missing files download through hf_endpoint.
+offline: true
+# torch's CPU threads (image pre- and post-processing). torch's default, one per core, thrashes
+# on a server shared with simulators.
+cpu_threads: 4
+# Calls that may wait for or run on the GPU at once; more fail as `busy` (retryable).
+max_pending: 8
+
+# The detector behind `detect`; null serves no detection.
+grounding_dino:
+  model: IDEA-Research/grounding-dino-base    # or IDEA-Research/grounding-dino-tiny
+  # The hub commit to load. grounding-dino-tiny's is a2bb814dd30d776dcf7e30523b00659f4f141c71.
+  revision: 12bdfa3120f3e7ec7b434d90674b3396eccf88eb
+# The segmenter behind `segment`: text prompts (concept segmentation), boxes and points (the
+# tracker's interactive decoder). The hub repository is gated: it can be a
+# directory with the transformers-format files from ModelScope (see packages/vision/README.md).
+# null serves no segmentation.
+sam3:
+  model: /path/to/sam3                        # or facebook/sam3 (needs an accepted HF token)
+  revision: null                              # a hub commit; a directory ignores it
+# Run each model once on a blank image before /readyz turns 200 (the first call is otherwise
+# several times slower).
+warmup: true

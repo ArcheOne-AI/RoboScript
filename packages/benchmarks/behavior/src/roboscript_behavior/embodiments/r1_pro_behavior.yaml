@@ -1,0 +1,52 @@
+# The BEHAVIOR challenge's robot as the toolsets would see it: Galaxea's R1 Pro, a mobile bimanual
+# manipulator: two seven-joint arms with a gripper each, a four-joint torso and a holonomic base.
+# Check every value against OmniGibson's R1Pro when integrating.
+#
+# The profile's joint vector is the arms, grippers and torso: what proprioception reports
+# (`RobotState.qpos_cmd`) and what a joint-position step commands. The base is not in it: its
+# action is a planar velocity (`actions.base`), which the `execute` wire does not carry, so the
+# adapter leaves the base still.
+name: r1_pro_behavior
+action_dim: 20
+world_axes: x forward, y left, z up  # OmniGibson's world frame (verify)
+arms:
+  left:
+    joints: [left_arm_joint1, left_arm_joint2, left_arm_joint3, left_arm_joint4, left_arm_joint5, left_arm_joint6, left_arm_joint7]
+    action: [0, 7]
+    gripper_index: 7
+    ee_link: left_gripper_link
+    ee_to_tcp: [0.0, 0.0, 0.1]  # PLACEHOLDER
+    gripper:
+      joint: left_gripper_finger_joint1
+      scale: [0.0, 0.05]  # PLACEHOLDER: meters of finger travel, closed and open
+      empty: 0.0
+      holding_threshold: 0.1
+  right:
+    joints: [right_arm_joint1, right_arm_joint2, right_arm_joint3, right_arm_joint4, right_arm_joint5, right_arm_joint6, right_arm_joint7]
+    action: [8, 15]
+    gripper_index: 15
+    ee_link: right_gripper_link
+    ee_to_tcp: [0.0, 0.0, 0.1]  # PLACEHOLDER
+    gripper:
+      joint: right_gripper_finger_joint1
+      scale: [0.0, 0.05]
+      empty: 0.0
+      holding_threshold: 0.1
+joint_groups:
+  torso: {joints: [torso_joint1, torso_joint2, torso_joint3, torso_joint4], action: [16, 20]}
+# PLACEHOLDER: check against BEHAVIOR's grasp and asset frames when integrating. No skill reads
+# these until the core's manipulation entries are mounted on this robot (a mobile robot needs
+# bindings the skill builder provides); the values only have to be valid frames.
+poses:
+  contact_to_grasp: [[0.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 0.0, 1.0]
+  placement_rotation: [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 1
+cameras:  # PLACEHOLDER sizes: use the challenge's native sizes when integrating
+  head: {kind: head, type: sim_rgbd, width: 224, height: 224}
+  left_wrist: {kind: wrist, arm: left, type: sim_rgbd, width: 224, height: 224}
+  right_wrist: {kind: wrist, arm: right, type: sim_rgbd, width: 224, height: 224}
+actions:
+  joint_position: true     # the arms, the grippers and the torso
+  base: {holonomic: true}  # forward, sideways and turning velocity; bounds to verify

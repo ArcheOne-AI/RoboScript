@@ -1,0 +1,17 @@
+# The cuRobo planner service, one per GPU: python -m roboscript.motion --config motion
+# A placeholder: replace each value below with your robot's. A benchmark's example directory may
+# hold a complete one.
+
+embodiment: my_robot                  # a registered embodiment profile, or its YAML file
+assets_root: /path/to/your/robot/assets   # absolute: where the curobo ymls are
+device: cuda:0                        # the only choice: pick the GPU with CUDA_VISIBLE_DEVICES
+batch_size: 10                        # goals per batch-planner call
+warmup: true                          # warm the planner up on start
+
+planner_profile:                      # the env's collision table and the arms' turns about z
+  table: {size: [1.0, 2.0, 0.04], top_z: 0.0}   # replace: your env's table, top height in m
+  yaw_rad: {}
+
+arms:                                 # the arms to plan for; each may override its profile's values
+  left: {curobo_yml: my_robot/curobo_left.yml}
+  right: {curobo_yml: my_robot/curobo_right.yml}

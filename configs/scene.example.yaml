@@ -1,0 +1,31 @@
+# The perception, geometry and worldstate toolsets (roboscript.toolsets.scene.SceneConfig): one
+# config for all three, as they analyze frames the same way. The values shown are the defaults.
+# Which roles and phases see their tools is the method's declaration.
+
+# The pipeline's knobs (roboscript.perception.config.PerceptionConfig): table, lifting,
+# proposals, self-filter. configs/perception.example.yaml documents them. The anchor camera and
+# the table area (anchor, table.xy_box, table.z_range) have no defaults: set them for your scene
+# (a benchmark's perception binding fills them).
+pipeline: {}
+
+# URL of the motion planner service (python -m roboscript.motion), whose forward kinematics place
+# the robot so that its pixels are removed (the self-filter; the embodiment profile gives the
+# robot's URDF and collision spheres). null: no self-filter, for a robot the cameras never see
+# (MockEnv's). A scene where the cameras see the robot requires it.
+planner: null
+
+# URL of the vision service (python -m roboscript_vision): GroundingDINO, the identification
+# chain's cross-check, and SAM 3 for `segment`. It reads images from and writes masks to the
+# blob store, so it must share the Hub's blob directory (a stack's `blob_dir`). null: no
+# cross-check (identified objects stay "unconfirmed") and no grounding_dino or sam3 backend.
+vision: null
+
+# The VLM backends (Set-of-Mark and boxes), through the model gateway in the session
+# `<episode id>.perception`: the model or alias, reasoning effort, JPEG quality and image detail.
+# What holding means is the embodiment profile's (Gripper.holding_threshold).
+vlm:
+  model: grounder            # a gateway alias
+  reasoning_effort: medium
+  jpeg_quality: 95
+  detail: high
+  retry_waits_s: [5, 20, 60]  # before asking again when the gateway could not serve the call

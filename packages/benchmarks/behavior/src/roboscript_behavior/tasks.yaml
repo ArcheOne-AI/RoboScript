@@ -1,0 +1,15 @@
+# A SAMPLE of BEHAVIOR challenge tasks, enough to show the shape of a task table; generate the
+# full table (the challenge's activities) from the official benchmark when integrating. A task is
+# named after its BEHAVIOR activity. PLACEHOLDER VALUES: the step limits stand in for the official
+# time budget per activity, and `scenes` for the scene each activity is sampled in. An instance is
+# a numbered sampling of the activity (`EpisodeSpec.seed` with reset_by initial_state); the sample
+# assumes ten.
+tasks:
+  turning_on_radio: {step_limit: 3000, category: challenge}
+  picking_up_trash: {step_limit: 3000, category: challenge}
+  bringing_water: {step_limit: 3000, category: challenge}
+scenes:
+  turning_on_radio: house_single_floor
+  picking_up_trash: house_single_floor
+  bringing_water: house_single_floor
+instances: 10

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roboscript-robots"
+description = "Real-robot deployment for RoboScript"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+authors = [{ name = "The RoboScript Authors" }]
+dynamic = ["version"]
+dependencies = ["roboscript"]
+
+[project.urls]
+Homepage = "https://github.com/ArcheOne-AI/RoboScript"
+Repository = "https://github.com/ArcheOne-AI/RoboScript"
+
+[tool.hatch.version]
+path = "src/roboscript_robots/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roboscript_robots"]
+
+# The robots package's own extension point: a robot is a `RobotSpec` (its configuration and the
+# backends that drive it). The built-in fake robots are registered like a model package's robot
+# would be, and also as embodiment profiles and benchmark descriptors so a run can name them. No
+# runner drives them: the env_capabilities precheck refuses a run on a real robot.
+[project.entry-points."roboscript.robots"]
+fake_single_arm = "roboscript_robots.single_arm:FAKE"
+fake_dual_arm = "roboscript_robots.dual_arm:FAKE"
+fake_mobile_manipulator = "roboscript_robots.mobile_manipulator:FAKE"
+
+[project.entry-points."roboscript.embodiments"]
+fake_single_arm = "roboscript_robots.single_arm:EMBODIMENT"
+fake_dual_arm = "roboscript_robots.dual_arm:EMBODIMENT"
+fake_mobile_manipulator = "roboscript_robots.mobile_manipulator:EMBODIMENT"
+
+[project.entry-points."roboscript.benchmarks"]
+fake_single_arm = "roboscript_robots.single_arm:FAKE_BENCHMARK"
+fake_dual_arm = "roboscript_robots.dual_arm:FAKE_BENCHMARK"
+fake_mobile_manipulator = "roboscript_robots.mobile_manipulator:FAKE_BENCHMARK"

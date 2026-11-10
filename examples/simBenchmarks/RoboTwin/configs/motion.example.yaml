@@ -1,0 +1,23 @@
+# The cuRobo planner service, one per GPU in the simulator env:
+#   python -m roboscript.motion --config motion        (this file copied to configs/motion.yaml)
+# The robot comes from its embodiment profile (joints, ee-to-TCP offset, curobo ymls, base pose,
+# asset directory). This file adds what a benchmark's planner binding fixes and may override any
+# profile value per arm (curobo_yml, joints, ee_to_tcp, base).
+
+# A registered profile name, or its YAML file relative to the repository root.
+embodiment: packages/benchmarks/robotwin/src/roboscript_robotwin/embodiments/aloha_agilex.yaml
+assets_root: null           # absolute; null takes the profile's
+device: cuda:0              # the only choice: pick the GPU with CUDA_VISIBLE_DEVICES
+batch_size: 10              # goals per batch-planner call
+warmup: true                # warm the planner up on start; false only for quick experiments
+
+# A benchmark's planner binding, here RoboTwin's (roboscript_robotwin.bindings.PLANNER_PROFILE):
+# the collision table (0.7 x 2 x 0.04 m, top at 0.74 m) and the aloha-agilex arms' turns after
+# frame_bias (an arm below may override its own).
+planner_profile:
+  table: {size: [0.7, 2.0, 0.04], top_z: 0.74}
+  yaw_rad: {left: -0.02, right: -0.01}
+
+arms:                       # the arms to plan for (their yaws: planner_profile's)
+  left: {}
+  right: {}

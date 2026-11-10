@@ -1,0 +1,56 @@
+# The robot of MockEnv (roboscript.envs.mock). Each arm's six "joints" are its ee pose in the
+# world, x, y, z in meters then roll, pitch, yaw in radians (R = Rz(yaw) Ry(pitch) Rx(roll)), so
+# forward kinematics is trivial. Actions have 14 values: two arms, each with six joints and a
+# gripper command (1 open, 0 closed).
+name: mock_bimanual
+description: a two-armed robot at a table
+action_dim: 14
+world_axes: x to the robot's right, y forward (away from the robot), z up
+arms:
+  left:
+    joints: [left_x, left_y, left_z, left_roll, left_pitch, left_yaw]
+    action: [0, 6]
+    gripper_index: 6
+    ee_link: left_ee
+    ee_to_tcp: [0.1, 0.0, 0.0]  # 10 cm ahead of the ee along its x axis
+    gripper:
+      joint: left_finger_gap    # meters between the fingers, 0.08 when open
+      scale: [0.0, 0.08]
+      empty: 0.0
+      holding_threshold: 0.1  # MockEnv's fingers read 0 closed on nothing, 0.625 on a 5 cm box
+    # The grasp chooser: tilts up to 0.8 rad; the gripper pointing down (pitch 90 deg) or forward
+    # (+y).
+    grasp: {tilt: [0, 0.8], top_down: [0.7071068, 0, 0.7071068, 0], side: [0.7071068, 0, 0, 0.7071068]}
+    # MockEnv's start: 25 cm above the table's near half, the gripper pointing down.
+    home: [-0.25, -0.2, 0.95, 0.0, 1.5707963267948966, 0.0]
+  right:
+    joints: [right_x, right_y, right_z, right_roll, right_pitch, right_yaw]
+    action: [7, 13]
+    gripper_index: 13
+    ee_link: right_ee
+    ee_to_tcp: [0.1, 0.0, 0.0]
+    gripper:
+      joint: right_finger_gap
+      scale: [0.0, 0.08]
+      empty: 0.0
+      holding_threshold: 0.1  # MockEnv's fingers read 0 closed on nothing, 0.625 on a 5 cm box
+    # The grasp chooser: tilts up to 0.8 rad; the gripper pointing down (pitch 90 deg) or forward
+    # (+y).
+    grasp: {tilt: [0, 0.8], top_down: [0.7071068, 0, 0.7071068, 0], side: [0.7071068, 0, 0, 0.7071068]}
+    home: [0.25, -0.2, 0.95, 0.0, 1.5707963267948966, 0.0]
+# How grasps and MockEnv's boxes are framed (contracts.skills.PoseConventions):
+# the contact frame (y against the approach, z the closing axis) to the grasp frame (x the
+# approach, as `ee_to_tcp`; y the contact's z; z against the contact's x); the fingers close
+# along the ee's and TCP's y; a box's local up is its z (MockEnv turns boxes about z only); a
+# placement point's rotation on its face (y kept, x and z reversed, so its z points into the
+# face); a grasp is tried at 8 tilts.
+poses:
+  contact_to_grasp: [[0.0, 0.0, -1.0, 0.0], [-1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  tcp_closing_axis: [0.0, 1.0, 0.0]
+  object_up: [0.0, 0.0, 1.0]
+  placement_rotation: [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]]
+  approach_tilts: 8
+cameras:
+  overhead: {kind: head, type: mock_overhead, width: 512, height: 384}
+  wrist_left: {kind: wrist, arm: left, type: mock_wrist, width: 256, height: 192}
+  wrist_right: {kind: wrist, arm: right, type: mock_wrist, width: 256, height: 192}
