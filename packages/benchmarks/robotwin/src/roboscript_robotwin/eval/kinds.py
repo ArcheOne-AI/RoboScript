@@ -6,7 +6,8 @@ pipeline's worker runs it (`roboscript.orchestrate.worker`), on what it needs of
 settings' by default), through the pipeline (`EvalHost.evaluate`). A job that leaves blocks of the
 settings' modes to run (the clean ones before spare randomized blocks) ends `queued`, so that a
 launch again takes them up; a lane is done with its own blocks (the unit's job, only once the
-lane's are done too)."""
+lane's are done too). A job whose block gave back its ended shards' GPU room with blocks left
+(`job.RoomGivenBack`) ends `preempted`: the launch places it again at once, uncounted."""
 
 from collections.abc import Sequence
 from typing import Any, Protocol, cast
@@ -14,6 +15,7 @@ from typing import Any, Protocol, cast
 from roboscript.contracts.jobs import JobEnd, JobRequest
 from roboscript.orchestrate.jobs import RunKey
 from roboscript_robotwin.eval.blocks import P3Settings, owned_modes, p3_pending
+from roboscript_robotwin.eval.job import RoomGivenBack
 from roboscript_robotwin.eval.launch import Mode
 
 
@@ -37,6 +39,9 @@ class EvaluateJob:
         key = RunKey.of(request)
         run_dir = key.unit_dir(request.directory)
         mine = cast(list[Mode], request.modes) or host.p3.modes
-        await host.evaluate(request, mine, made)
+        try:
+            await host.evaluate(request, mine, made)
+        except RoomGivenBack as given:
+            return JobEnd(status="preempted", note=str(given))
         owned = owned_modes(host.p3, key) if key.lane is not None else None
         return JobEnd(status="queued" if p3_pending(host.p3, run_dir, owned) else "done")

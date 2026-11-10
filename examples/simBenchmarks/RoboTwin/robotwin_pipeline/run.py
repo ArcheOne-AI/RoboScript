@@ -14,7 +14,7 @@ store (`BLOBS`), which a GPU's vision service reads.
   set aside as `attempt<n>-aborted<k>`, runs again. With `s1_fallback`, an S1 that runs out of
   attempts yields its best Memory all the same (`ImitateConfig.fallback`, under
   `s1_fallback_rule`; `exit.json`'s `fallback`, `converged: false`, `s1_exit: best_memory`): the
-  job writes `fallback.json` naming it (`ops.FALLBACK`), S1 is `done`, and its variants start
+  job writes `s1_fallback.json` naming it (`ops.FALLBACK`), S1 is `done`, and its variants start
   from it; under the `success` rule an S1 without any official success has none and ends
   `not_passed` (`s1_exit: none`), which the summary counts as 0 in P3.
 - `practice` (S2, one place): the variant's directory gets the S1's Memory versions and its

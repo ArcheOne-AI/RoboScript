@@ -15,7 +15,8 @@ demo: data/demos/recorded/{task}/package   # the demo package (scripts/record_de
 
 # The context windows of the models the runs use, in tokens (every brain's and P3's host's).
 context_windows:
-  {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}
+  {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000,
+   gpt-6.1-sol: 1000000, deepseek-flash: 1000000}
 
 learning:
   method: wicl

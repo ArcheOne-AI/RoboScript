@@ -43,6 +43,13 @@ class InfraFailure(RuntimeError):
     error."""
 
 
+class RoomGivenBack(Exception):
+    """A P3 job's block gave back its ended shards' GPU room (`P3Run.release_shards`) and the job
+    has blocks left to run: the job ends there (`kinds.EvaluateJob`: `preempted`, which the
+    launch takes up again at once, uncounted), so that its next block, or the rerun of its lost
+    episodes, starts on a placement of its own rather than in room given away. Not a failure."""
+
+
 def p3_config(
     base: P3Config,
     run_dir: Path,
@@ -119,10 +126,14 @@ async def evaluate_blocks(
     finished its count already is closed from it, nothing run (`close_blocks`). Each block's
     episodes record the provenance `provenance_of` gives for its profile (`block_profile`).
     `pins`: a directory of verdicts files shared with other runs of the same blocks,
-    `<task>/<mode>-block<N>.jsonl` (`P3Run.pins`; None: each block pins its own). The job's last
-    block to run gives back each shard's room as its client ends (`P3Run.release_shards`); a
-    rerun of its lost episodes after that would start shards in room given away, so the job
-    fails as infrastructure instead and runs again on a placement of its own."""
+    `<task>/<mode>-block<N>.jsonl` (`P3Run.pins`; None: each block pins its own). Each sharded
+    block gives back each shard's room as its client ends (`P3Run.release_shards`), so that a
+    block's ended shards free their GPU room while its slowest shard runs on. A next block, or a
+    rerun of lost episodes, would start shards in room given away: after a block that is not
+    the job's last (done, or with lost episodes) the job ends with `RoomGivenBack` and the
+    launch places it again (the blocks it finished are skipped); lost episodes of its last
+    block fail it as infrastructure. Which seeds, episodes and records a block has does not
+    depend on it."""
     order = [(mode, block) for mode in modes for block in p3.blocks]
     for mode in modes:
         wanted = p3.episodes_of(mode)
@@ -147,7 +158,7 @@ async def evaluate_blocks(
                 strict_shards=p3.strict_shards,
                 steal_shards=p3.steal_shards,
                 pins=None if pins is None else pins / key.task / f"{mode}-block{block}.jsonl",
-                release_shards=last and p3.shards > 1,
+                release_shards=p3.shards > 1,
             )
             start = 1
             while True:  # starts that fail, up to P3_STARTS; reruns of lost episodes, bounded
@@ -179,6 +190,11 @@ async def evaluate_blocks(
                     # (`launch.resume_plan`, which refuses one lost `MAX_LOSSES` runs in a row)
                     if evaluation.release_shards:
                         set_aside(out)
+                        if not last:
+                            raise RoomGivenBack(
+                                f"P3 {mode} block {block} lost {lost} after its ended shards' "
+                                "GPU room went back: placed again"
+                            )
                         raise InfraFailure(
                             f"P3 {mode} block {block} lost {lost} after its ended shards' GPU "
                             "room went back: runs again on a placement of its own"
@@ -198,6 +214,11 @@ async def evaluate_blocks(
                         "result (_result.txt)"
                     )
                 break
+            if evaluation.release_shards and not last:
+                raise RoomGivenBack(
+                    f"P3 {mode} block {block} done; its ended shards' GPU room went back: "
+                    "placed again for the next block"
+                )
 
 
 def _client_started(out: Path) -> bool:

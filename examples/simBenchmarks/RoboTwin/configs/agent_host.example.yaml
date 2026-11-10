@@ -124,7 +124,8 @@ brain:
     reasoning_effort: low
     # the models' context windows
     context:
-      windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}
+      windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000,
+                gpt-6.1-sol: 1000000, deepseek-flash: 1000000}
 
 # The one-time identification, tried again in place when the infrastructure fails it (the model
 # or the vision service did not answer; nothing re-runs a P3 episode): the tries, and the wait

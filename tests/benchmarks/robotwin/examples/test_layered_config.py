@@ -72,6 +72,7 @@ def test_the_models_context_windows_are_explicit() -> None:
         "reviser": 272000,
         "gpt-5.6-luna": 272000,
         "gpt-6.1-sol": 1000000,
+        "deepseek-flash": 1000000,
     }
     config = compose_config(EXAMPLE)
     for role, brain in config.learning["brains"].items():

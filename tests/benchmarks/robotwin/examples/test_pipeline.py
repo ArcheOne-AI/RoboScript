@@ -57,6 +57,7 @@ from roboscript.agent.session import Usage
 from roboscript.contracts.events import Event
 from roboscript.contracts.hub import EpisodeEnd
 from roboscript.contracts.ids import EpisodeId, ManifestId, TaskName
+from roboscript.contracts.jobs import JobRequest
 from roboscript.kernel import entrypoints
 from roboscript.learning import EpisodeOutcome
 from roboscript.learning.episode import set_aside
@@ -70,10 +71,12 @@ from roboscript_robotwin.benchmark import HERE
 from roboscript_robotwin.eval import install, launch, wire
 from roboscript_robotwin.eval import job as p3_job
 from roboscript_robotwin.eval.blocks import (
+    P3Settings,
     block_done,
     p3_pending,
 )
 from roboscript_robotwin.eval.job import p3_config
+from roboscript_robotwin.eval.kinds import EvaluateJob
 from roboscript_robotwin.eval.launch import P3Config, P3Motion, P3Result, P3Run
 
 EXAMPLE = HERE.parents[4] / "examples" / "simBenchmarks" / "RoboTwin"
@@ -190,7 +193,7 @@ async def test_an_s1_without_an_official_success_stops_and_counts_0_in_p3(root: 
     exited = json.loads(exit_path.read_bytes())
     assert (exited["passed"], exited["s1_exit"], exited["fallback"]) == (False, "none", None)
     assert exited["fallback_reason"] == "no official success"
-    assert not (directory / RED / "S1" / "fallback.json").exists()
+    assert not (directory / RED / "S1" / "s1_fallback.json").exists()
     assert not (directory / RED / "default" / RED / "S2").exists()
     summary = json.loads((directory / "summary.json").read_bytes())
     assert (summary["s1_best_memory"], summary["s1_stopped"]) == ([], [RED])
@@ -937,3 +940,89 @@ async def test_a_block_lost_too_often_fails_its_job(
             ["clean"],
         )
     assert len(calls) == 1 and failure_of(caught.value) == "error"
+
+
+def _sharded_p3_job(tmp_path: Path) -> tuple[PipelineConfig, Path]:
+    """`_p3_job` with two shards a block and a randomized block after the clean one."""
+    p3 = {"config": str(tmp_path / "p3.yaml"), "episodes": 3, "shards": 2, "randomized": True}
+    config = pipeline_config(tmp_path, [RED], {"default": {}}, p3=p3, max_per_gpu=4)
+    run_dir = tmp_path / "job"
+    (run_dir / "P3").mkdir(parents=True)
+    (run_dir / "P3" / "manifest.json").write_text("{}", encoding="utf-8")
+    return config, run_dir
+
+
+async def test_every_sharded_block_gives_back_its_ended_shards_and_the_job_is_placed_again(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Every block of a sharded job gives back each ended shard's GPU room
+    (`release_shards`): a block that is not the job's last ends the job (`RoomGivenBack`), so
+    that the next block starts on a placement of its own; the job run again skips the finished
+    block and evaluates the next."""
+    config, run_dir = _sharded_p3_job(tmp_path)
+    calls: list[P3Run] = []
+
+    async def evaluate(run: P3Run, launcher: P3Config) -> None:
+        calls.append(run)
+        _lost_result(run.out_dir, RED, [])
+
+    monkeypatch.setattr(p3_job, "evaluate", evaluate)
+    key, services = RunKey(RED, "default"), {"motion": "http://127.0.0.1:1"}
+    args = (config, key, run_dir, 4, services, tmp_path, ["clean", "randomized"])
+    with pytest.raises(p3_job.RoomGivenBack, match="clean block 1 done"):
+        await run_module._evaluate(*args)
+    assert [(r.mode, r.release_shards, r.shards) for r in calls] == [("clean", True, 2)]
+    assert block_done(run_dir / "P3" / "clean" / "block1")
+    assert p3_pending(config.p3, run_dir)
+    await run_module._evaluate(*args)  # placed again: the randomized block, the job's last
+    assert [(r.mode, r.release_shards) for r in calls] == [("clean", True), ("randomized", True)]
+    assert calls[1].resume is None and not p3_pending(config.p3, run_dir)
+
+
+async def test_a_lost_episode_of_a_sharded_block_places_the_job_again_or_fails_its_last(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A sharded block whose run lost an episode after its ended shards' room went back: not
+    its job's last, the job ends to be placed again (`RoomGivenBack`) and its next run resumes
+    the block from that run; its last, the job fails as infrastructure."""
+    config, run_dir = _sharded_p3_job(tmp_path)
+    calls: list[P3Run] = []
+
+    async def evaluate(run: P3Run, launcher: P3Config) -> None:
+        calls.append(run)
+        _lost_result(run.out_dir, RED, [1] if len(calls) in (1, 3) else [])
+
+    monkeypatch.setattr(p3_job, "evaluate", evaluate)
+    key, services = RunKey(RED, "default"), {"motion": "http://127.0.0.1:1"}
+    args = (config, key, run_dir, 4, services, tmp_path, ["clean", "randomized"])
+    with pytest.raises(p3_job.RoomGivenBack, match="lost"):
+        await run_module._evaluate(*args)
+    clean = run_dir / "P3" / "clean"
+    with pytest.raises(p3_job.RoomGivenBack, match="clean block 1 done"):
+        await run_module._evaluate(*args)  # resumed from the run that lost it
+    assert calls[1].resume == clean / "block1-aborted1" and block_done(clean / "block1")
+    with pytest.raises(p3_job.InfraFailure, match="placement of its own"):
+        await run_module._evaluate(*args)  # the randomized block, the job's last, lost one
+    assert [r.mode for r in calls] == ["clean", "clean", "randomized"]
+
+
+async def test_a_job_whose_block_gave_back_its_room_ends_preempted() -> None:
+    """The evaluation job body turns `RoomGivenBack` into a `preempted` end (the launch places
+    it again at once, uncounted); its note says why."""
+
+    class Host:
+        p3 = P3Settings(blocks=[1], randomized=True)
+
+        async def evaluate(self, request: Any, modes: Any, made: Any) -> None:
+            raise p3_job.RoomGivenBack("P3 clean block 1 done; placed again")
+
+    request = JobRequest(
+        directory=Path("/nonexistent"),
+        phase="evaluate",
+        task=RED,
+        unit="default",
+        gpu=0,
+        services={},
+    )
+    ended = await EvaluateJob().run(Host(), request, None)  # type: ignore[arg-type]
+    assert ended.status == "preempted" and ended.note == "P3 clean block 1 done; placed again"

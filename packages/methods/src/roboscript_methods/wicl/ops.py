@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 S1: Final = "S1"
 """The directory, and the unit of the key, of a task's shared S1."""
-FALLBACK: Final = "fallback.json"
+FALLBACK: Final = "s1_fallback.json"
 """In a task's S1 directory once S1 ran out of attempts and its fallback found a Memory
 (`write_fallback`): the version its variants start S2 from."""
 

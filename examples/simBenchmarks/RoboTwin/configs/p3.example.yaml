@@ -67,4 +67,5 @@ host:
       reasoning_effort: high
       # as the pipeline's context_windows
       context:
-        windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000, gpt-6.1-sol: 1000000}
+        windows: {brain-default: 272000, reviser: 272000, gpt-5.6-luna: 272000,
+                  gpt-6.1-sol: 1000000, deepseek-flash: 1000000}
